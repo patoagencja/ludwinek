@@ -9,6 +9,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<script src="/assets/zgody.js" defer></script>
 <link rel="preload" href="/assets/fonts/cormorant-garamond-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <title>Vouchery · Ludwinek Aesthetic, Warszawa</title>
@@ -476,7 +477,7 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 <div class="offer"><div class="orow main"><span>Do zapłaty</span><b>{{ vsel.online }}</b></div><sc-if value="{{ isZ }}" hint-placeholder-val="{{ true }}"><div class="orow"><span>W gabinecie</span><b style="font-size: 22px; color: #6F675C">{{ vsel.gab }}</b></div></sc-if><div class="orow"><span>Ważność</span><b style="font-size: 28px">{{ vsel.salon }}</b></div>
 <p class="klarna"><span class="kb">Klarna.</span><span>lub 3 raty po {{ vsel.inst }} zł bez odsetek</span><a href="#klarna">Jak to działa</a></p>
 <div class="{{ vpC.mail }}" style="margin-top: 16px"><label for="vmail">E-mail, na który wyślę voucher</label><input id="vmail" type="email" placeholder="twoj@email.pl" autocomplete="email" aria-required="true" aria-invalid="{{ vpI.mail }}" aria-describedby="vmail-e" onInput="{{ vpInput }}"><sc-if value="{{ vpE.mail }}" hint-placeholder-val="{{ false }}"><p class="ferr" id="vmail-e">{{ vpE.mail }}</p></sc-if></div>
-<div class="{{ vpC.ok }}" style="margin-top: 16px"><label class="chk"><input id="vok" type="checkbox" aria-required="true" aria-invalid="{{ vpI.ok }}" aria-describedby="vok-e" onChange="{{ vpInput }}"><span>Akceptuję <a href="/informacje#zasady-rezerwacji">regulamin voucherów</a> i <a href="/informacje">politykę prywatności</a>.</span></label><sc-if value="{{ vpE.ok }}" hint-placeholder-val="{{ false }}"><p class="ferr" id="vok-e">{{ vpE.ok }}</p></sc-if></div>
+<div class="{{ vpC.ok }}" style="margin-top: 16px"><label class="chk"><input id="vok" type="checkbox" aria-required="true" aria-invalid="{{ vpI.ok }}" aria-describedby="vok-e" onChange="{{ vpInput }}"><span>Akceptuję <a href="/informacje#zasady-rezerwacji">regulamin voucherów</a> i <a href="/polityka-prywatnosci">politykę prywatności</a>.</span></label><sc-if value="{{ vpE.ok }}" hint-placeholder-val="{{ false }}"><p class="ferr" id="vok-e">{{ vpE.ok }}</p></sc-if></div>
 <div class="ob"><button type="button" class="btn vgo" onClick="{{ vpGo }}">Przejdź do płatności</button></div>
 <sc-if value="{{ vpOpen }}" hint-placeholder-val="{{ false }}"><div class="vpay" id="vpay" role="status"><p class="lbl">Podgląd płatności</p><p class="h3" id="vpay-h" tabindex="-1">Tu otworzy się płatność: <em>BLIK, karta, przelew, Klarna.</em></p><p class="sm" style="margin: 0"><b class="vpay-amt">{{ vsel.online }}</b> · {{ vsel.full }}. Po opłaceniu voucher w PDF przyjdzie na adres <b class="vpay-mail">{{ vpMail }}</b>.</p><a class="tl" href="/#voucher-potwierdzenie">Zobacz mail z voucherem</a></div></sc-if>
 <p class="sm" style="margin: 14px 0 0">BLIK · karta · przelew · Klarna</p>
@@ -520,7 +521,7 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 <div><p class="lbl" style="margin-bottom: 12px">Problemy</p><ul><li><a href="/blizny-potradzikowe">Blizny potrądzikowe</a></li><li><a href="/#znajdz-przebarwienia">Przebarwienia</a></li><li><a href="/#znajdz-rozszerzone-pory">Rozszerzone pory</a></li><li><a href="/#znajdz-nierowna-struktura-skory">Nierówna struktura skóry</a></li><li><a href="/#znajdz-przesuszenie">Przesuszenie</a></li><li><a href="/#znajdz-utrata-jedrnosci">Utrata jędrności</a></li></ul></div>
 <div><p class="lbl" style="margin-bottom: 12px">Informacje</p><ul><li><a href="/informacje#wskazania">Wskazania</a></li><li><a href="/informacje#przeciwwskazania">Przeciwwskazania</a></li><li><a href="/informacje#przygotowanie">Przygotowanie</a></li><li><a href="/informacje#zalecenia">Zalecenia po zabiegu</a></li><li><a href="/informacje#zasady-rezerwacji">Zasady rezerwacji</a></li><li><a href="/informacje#faq">FAQ</a></li></ul></div>
 </div>
-<div class="fbot"><span>© 2026 Ludwinek Aesthetic</span><span class="fsoc"><a href="https://instagram.com/">Instagram</a> · <a href="https://facebook.com/">Facebook</a></span><span class="flegal"><a href="/informacje#zasady-rezerwacji">Regulamin</a> · <a href="/informacje">Polityka prywatności</a> · <a href="/informacje#zasady-rezerwacji">Regulamin voucherów</a></span></div>
+<div class="fbot"><span>© 2026 Ludwinek Aesthetic</span><span class="flegal"><a href="/regulamin">Regulamin</a> · <a href="/polityka-prywatnosci">Polityka prywatności</a> · <a href="#ustawienia-cookies">Ustawienia cookies</a></span></div>
 </div>
 </footer>
 <div class="bar"><a class="btn btn-book" href="https://booksy.com/pl-pl/307000_ludwinek-aesthetic_medycyna-estetyczna_3_warszawa" target="_blank" rel="noopener">Umów wizytę</a><a class="btn btn-o" href="/vouchery">Kup voucher</a></div>

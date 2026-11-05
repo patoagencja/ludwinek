@@ -63,6 +63,15 @@ if ($path === 'wyloguj') {
     exit;
 }
 
+// dokumenty prawne są publiczne także przed startem (strona „Wkrótce” do nich linkuje)
+const DOKUMENTY = ['polityka-prywatnosci' => '_polityka-prywatnosci.php', 'regulamin' => '_regulamin.php'];
+if (isset(DOKUMENTY[$path])) {
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: public, max-age=300');
+    require __DIR__ . '/' . DOKUMENTY[$path];
+    exit;
+}
+
 if (!$wpuszczony || ($path === '' && isset($_GET['wkrotce']))) {
     if ($path === '') {
         header('Content-Type: text/html; charset=utf-8');

@@ -9,6 +9,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="stylesheet" href="/assets/fonts.css">
+<script src="/assets/zgody.js" defer></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:20px;background:#1F1E1C;color:#3A3A3A;font:400 16px/1.6 'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}

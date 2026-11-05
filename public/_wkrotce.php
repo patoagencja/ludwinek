@@ -18,6 +18,7 @@
 <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="stylesheet" href="/assets/fonts.css">
+<script src="/assets/zgody.js" defer></script>
 <style>
 :root{--bg:#FAF8F5;--ink:#141414;--soft:#3A3A3A;--mute:#6F675C;--line:#D8D2C8;--deep:#1F1E1C;--lite:#FAF8F5;--gold:#C9A97F;--plum:#6e133b;--serif:'Cormorant Garamond',Garamond,'Times New Roman',serif;--sans:'Inter',system-ui,-apple-system,sans-serif}
 *{box-sizing:border-box}
@@ -50,6 +51,8 @@ h1 em{font-style:italic}
 .info{display:flex;flex-wrap:wrap;gap:10px 28px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;color:var(--mute)}
 .info a{text-decoration:none;color:var(--soft)}
 .info a:hover{color:var(--ink)}
+.info .leg{flex-basis:100%;font-size:12.5px}
+.info .leg a{color:var(--mute)}
 .ph{position:relative;margin:0;overflow:hidden;background:#D6CEC2}
 .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;filter:grayscale(.12) sepia(.06) brightness(.94)}
 .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(250,248,245,.18),rgba(250,248,245,0) 30%)}
@@ -98,6 +101,7 @@ h1 em{font-style:italic}
 <span>Plac Konstytucji 1, 00-647 Warszawa</span>
 <a href="tel:+48737460105">737 460 105</a>
 <a href="mailto:ludwinekaesthetic@gmail.com">ludwinekaesthetic@gmail.com</a>
+<span class="leg"><a href="/polityka-prywatnosci">Polityka prywatności</a> · <a href="/regulamin">Regulamin</a> · <a href="#ustawienia-cookies">Ustawienia cookies</a></span>
 </footer>
 </div>
 <figure class="ph"><img src="/img/b9f8c1b0435dcb637919e42d393ec010.jpg" alt="Julia Ludwinek, kosmetolog" width="1192" height="1800"></figure>

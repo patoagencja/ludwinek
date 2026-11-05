@@ -9,6 +9,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<script src="/assets/zgody.js" defer></script>
 <link rel="preload" href="/assets/fonts/cormorant-garamond-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <title>Kontakt · Ludwinek Aesthetic, Plac Konstytucji 1, Warszawa</title>
@@ -479,7 +480,7 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 <div class="fld"><label for="k3">Zabieg</label><select id="k3" name="zabieg"><option>Nie wiem, chcę konsultację</option><option>Modelowanie ust</option><option>Hialuronidaza</option><option>Stymulatory tkankowe</option><option>Mezoterapia igłowa</option><option>Dermapen 4.0</option><option>Terapia blizn i rozstępów</option><option>Biopeeling</option><option>Oczyszczanie wodorowe</option><option>Zabiegi pielęgnacyjne</option><option>Event Glow</option><option>Ludwinek Signature Glow</option><option>Brwi i rzęsy</option><option>Mezoterapia skóry głowy</option></select></div>
 <div class="fld"><label for="k6">Preferowany termin</label><input id="k6" name="termin" placeholder="np. czwartek po 17:00"></div>
 <div class="fld" style="grid-column: 1 / -1"><label for="k4">Wiadomość (opcjonalnie)</label><textarea id="k4" name="msg"></textarea></div>
-<div class="{{ kfC.ok }}" style="grid-column: 1 / -1"><label class="chk"><input id="k7" name="zgoda" type="checkbox" aria-required="true" aria-invalid="{{ kfI.ok }}" aria-describedby="k7-e"><span>Wyrażam zgodę na kontakt w sprawie wizyty. Szczegóły w <a href="/informacje">polityce prywatności</a>.</span></label><sc-if value="{{ kfE.ok }}" hint-placeholder-val="{{ false }}"><p class="ferr" id="k7-e">{{ kfE.ok }}</p></sc-if></div>
+<div class="{{ kfC.ok }}" style="grid-column: 1 / -1"><label class="chk"><input id="k7" name="zgoda" type="checkbox" aria-required="true" aria-invalid="{{ kfI.ok }}" aria-describedby="k7-e"><span>Zapoznałam się z <a href="/polityka-prywatnosci">informacją o przetwarzaniu danych</a>. Proszę, nie wpisuj tu informacji o zdrowiu: omówimy je na konsultacji.</span></label><sc-if value="{{ kfE.ok }}" hint-placeholder-val="{{ false }}"><p class="ferr" id="k7-e">{{ kfE.ok }}</p></sc-if></div>
 <div style="grid-column: 1 / -1" class="kf-send"><button type="submit" class="btn">Wyślij zapytanie</button><p class="sm" style="margin: 0"><span class="rq" aria-hidden="true">*</span> pola wymagane</p></div>
 </form></sc-if>
 <sc-if value="{{ kfDone }}" hint-placeholder-val="{{ false }}"><div class="kf-done" id="kf-done" role="status">
@@ -507,7 +508,7 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 <div><p class="lbl" style="margin-bottom: 12px">Problemy</p><ul><li><a href="/blizny-potradzikowe">Blizny potrądzikowe</a></li><li><a href="/#znajdz-przebarwienia">Przebarwienia</a></li><li><a href="/#znajdz-rozszerzone-pory">Rozszerzone pory</a></li><li><a href="/#znajdz-nierowna-struktura-skory">Nierówna struktura skóry</a></li><li><a href="/#znajdz-przesuszenie">Przesuszenie</a></li><li><a href="/#znajdz-utrata-jedrnosci">Utrata jędrności</a></li></ul></div>
 <div><p class="lbl" style="margin-bottom: 12px">Informacje</p><ul><li><a href="/informacje#wskazania">Wskazania</a></li><li><a href="/informacje#przeciwwskazania">Przeciwwskazania</a></li><li><a href="/informacje#przygotowanie">Przygotowanie</a></li><li><a href="/informacje#zalecenia">Zalecenia po zabiegu</a></li><li><a href="/informacje#zasady-rezerwacji">Zasady rezerwacji</a></li><li><a href="/informacje#faq">FAQ</a></li></ul></div>
 </div>
-<div class="fbot"><span>© 2026 Ludwinek Aesthetic</span><span class="fsoc"><a href="https://instagram.com/">Instagram</a> · <a href="https://facebook.com/">Facebook</a></span><span class="flegal"><a href="/informacje#zasady-rezerwacji">Regulamin</a> · <a href="/informacje">Polityka prywatności</a> · <a href="/informacje#zasady-rezerwacji">Regulamin voucherów</a></span></div>
+<div class="fbot"><span>© 2026 Ludwinek Aesthetic</span><span class="flegal"><a href="/regulamin">Regulamin</a> · <a href="/polityka-prywatnosci">Polityka prywatności</a> · <a href="#ustawienia-cookies">Ustawienia cookies</a></span></div>
 </div>
 </footer>
 <div class="bar"><a class="btn btn-book" href="https://booksy.com/pl-pl/307000_ludwinek-aesthetic_medycyna-estetyczna_3_warszawa" target="_blank" rel="noopener">Umów wizytę</a><a class="btn btn-o" href="/vouchery">Kup voucher</a></div>

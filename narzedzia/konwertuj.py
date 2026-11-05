@@ -76,6 +76,7 @@ HEAD_ALL = '''<script>if(location.protocol==="http:"&&/(^|\\.)ludwinekaesthetic\
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<script src="/assets/zgody.js" defer></script>
 <link rel="preload" href="/assets/fonts/cormorant-garamond-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>'''
 
@@ -110,6 +111,18 @@ def links(s):
     s = re.sub(r'\b(' + '|'.join(SLUG) + r')-(Desktop|Mobile)\.dc\.html(#[\w-]*)?', gen, s)
     return s
 
+def legal(s):
+    # stopka: prawdziwe dokumenty i ustawienia cookies; regulamin voucherów wróci razem ze sprzedażą voucherów;
+    # Instagram/Facebook wrócą z prawdziwymi adresami profili
+    s = re.sub(r'<span class="flegal">.*?</span>', '<span class="flegal"><a href="/regulamin">Regulamin</a> · <a href="/polityka-prywatnosci">Polityka prywatności</a> · <a href="#ustawienia-cookies">Ustawienia cookies</a></span>', s, flags=re.S)
+    s = re.sub(r'<span class="fsoc">.*?</span>', '', s, flags=re.S)
+    s = s.replace('href="/informacje">polityce prywatności', 'href="/polityka-prywatnosci">polityce prywatności')
+    s = s.replace('href="/informacje">politykę prywatności', 'href="/polityka-prywatnosci">politykę prywatności')
+    # zgoda w formularzu kontaktowym: informacja o danych + zgoda na informacje o zdrowiu, jeśli ktoś je wpisze (RODO art. 9)
+    s = s.replace('Wyrażam zgodę na kontakt w sprawie wizyty. Szczegóły w <a href="/polityka-prywatnosci">polityce prywatności</a>.',
+                  'Zapoznałam się z <a href="/polityka-prywatnosci">informacją o przetwarzaniu danych</a>. Proszę, nie wpisuj tu informacji o zdrowiu: omówimy je na konsultacji.')
+    return s
+
 def convert(name, imgs):
     key, var = name.rsplit('-', 1)
     s = open(os.path.join(SRC, name + '.html'), encoding='utf-8').read()
@@ -117,6 +130,7 @@ def convert(name, imgs):
     s = s.replace('<script src="./support.js"></script>', '<script src="/assets/dc.js"></script>')
     s = re.sub(r'<link rel="stylesheet" href="https://fonts\.googleapis\.com/css2[^"]*">', '<link rel="stylesheet" href="/assets/fonts.css">', s)
     s = links(s)
+    s = legal(s)
     t, d = TITLE[key]
     s = re.sub(r'<title>.*?</title>', lambda m: f'<title>{t}</title>\n<meta name="description" content="{d}">', s, count=1, flags=re.S)
     s = s.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n' + (HEAD_M if var == 'Mobile' else HEAD_D) + '\n' + HEAD_ALL, 1)
