@@ -16,6 +16,8 @@ jobs:
           D=ludwinekaesthetic.pl; IP=195.2.223.12
           for h in $D www.$D; do echo "DNS $h → $(getent hosts $h | awk '{print $1}' | head -1)"; done
           echo "NS: $(dig +short NS $D 2>/dev/null | tr '\n' ' ')"
+          echo "Rejestr .pl (a-dns.pl) NS: $(dig +short NS $D @a-dns.pl 2>/dev/null | tr '\n' ' ') $(dig +noall +authority NS $D @a-dns.pl 2>/dev/null | tr '\n' ' ')"
+          for r in 1.1.1.1 8.8.8.8 9.9.9.9 208.67.222.222; do echo "A przez $r: $(dig +short A $D @$r 2>/dev/null | tr '\n' ' ') (TTL $(dig +noall +answer A $D @$r 2>/dev/null | awk '{print $2}' | head -1))"; done
           c=$(curl -s --max-time 30 -o b.txt -w '%{http_code}' "http://$D/" || echo 000)
           if grep -q 'już wkrótce' b.txt; then echo "::notice::DOMENA_OK: http://$D pokazuje nową stronę"; else echo "::warning::DOMENA_STARA: http://$D pokazuje jeszcze coś innego (HTTP $c)"; fi
           c=$(curl -s --max-time 30 -o /dev/null -w '%{http_code}' "https://$D/" || echo 000)
