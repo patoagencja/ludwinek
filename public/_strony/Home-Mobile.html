@@ -382,6 +382,13 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 .vsoon{display:flex;flex-direction:column;gap:12px;margin-top:20px;padding:22px 22px 24px;background:#EFEBE4}
 .vsoon .h3{margin:0}
 .vsoon .btn{align-self:flex-start;margin-top:4px}
+
+/* mapa Google (osadzona, widoczna od razu) w miejscu atrapy mapy z projektu */
+.map.gmap{overflow:hidden}
+.map.gmap::before{display:none}
+.map.gmap .gmap-f{position:absolute;top:0;left:0;width:100%;height:100%;border:0;filter:grayscale(.35) sepia(.08)}
+.map.gmap .gmap-open{position:absolute;z-index:2;left:12px;bottom:12px;right:auto;padding:8px 12px;background:rgba(250,248,245,.94);color:#3E3A35;text-decoration:none}
+.map.gmap .gmap-open:hover{color:#141414}
 </style>
 </helmet>
 <div class="la" id="top">
@@ -552,7 +559,7 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 <div><dt>E-mail</dt><dd><a href="mailto:ludwinekaesthetic@gmail.com">ludwinekaesthetic@gmail.com</a></dd></div>
 <div><dt>Godziny</dt><dd>9:00–20:00, wizyty umawiane indywidualnie</dd></div>
 </dl>
-<a class="map" href="https://www.google.com/maps/search/?api=1&amp;query=Ludwinek+Aesthetic+Plac+Konstytucji+1+Warszawa" target="_blank" rel="noopener" aria-label="Otwórz w Google Maps: Plac Konstytucji 1" style="margin-right: -20px"><span class="pin"></span><span class="cap" style="color: #6F675C">Otwórz w Google Maps →</span></a>
+<div class="map gmap" style="margin-right: -20px"><iframe class="gmap-f" src="https://www.google.com/maps?q=Ludwinek+Aesthetic,+Plac+Konstytucji+1,+00-647+Warszawa&amp;output=embed" title="Mapa: Ludwinek Aesthetic, Plac Konstytucji 1, Warszawa" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe><a class="cap gmap-open" href="https://www.google.com/maps/search/?api=1&amp;query=Ludwinek+Aesthetic+Plac+Konstytucji+1+Warszawa" target="_blank" rel="noopener">Otwórz w Google Maps →</a></div>
 </div>
 </section>
 </main>

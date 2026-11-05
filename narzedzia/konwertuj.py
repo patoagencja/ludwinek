@@ -156,43 +156,36 @@ def vouchers(s, key):
     h = s.find('</helmet>'); i = s.rfind('</style>', 0, h)
     return s[:i] + VSOON_CSS + s[i:]
 
+MAP_SRC = 'https://www.google.com/maps?q=Ludwinek+Aesthetic,+Plac+Konstytucji+1,+00-647+Warszawa&amp;output=embed'
+MAP_IFRAME = ('<iframe class="gmap-f" src="' + MAP_SRC + '" title="Mapa: Ludwinek Aesthetic, Plac Konstytucji 1, Warszawa" '
+              'loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>')
 MAP_CSS = """
-/* mapa Google na Kontakcie: wczytuje się dopiero po kliknięciu (bez kliknięcia strona nic nie wysyła do Google) */
-.map.gmap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
-.map.gmap .gmap-on{position:relative;z-index:2;background:#FAF8F5}
-.map.gmap .pin{display:none}
-.map.gmap .gmap-note{position:static;max-width:30em;padding:0 16px;text-transform:none;letter-spacing:0;font-size:12.5px}
-.map.gmap .gmap-note a{color:inherit}
-.map.gmap .gmap-f{position:absolute;top:0;left:0;width:100%;height:100%;border:0;display:none;z-index:3}
-html.gmap-on .map.gmap .gmap-f{display:block}
-html.gmap-on .map.gmap .gmap-on,html.gmap-on .map.gmap .gmap-note{visibility:hidden}
+/* mapa Google (osadzona, widoczna od razu) w miejscu atrapy mapy z projektu */
+.map.gmap{overflow:hidden}
+.map.gmap::before{display:none}
+.map.gmap .gmap-f{position:absolute;top:0;left:0;width:100%;height:100%;border:0;filter:grayscale(.35) sepia(.08)}
+.map.gmap .gmap-open{position:absolute;z-index:2;left:12px;bottom:12px;right:auto;padding:8px 12px;background:rgba(250,248,245,.94);color:#3E3A35;text-decoration:none}
+.map.gmap .gmap-open:hover{color:#141414}
 """
-MAP_JS = """<script id="la-map">
-/* mapa Google po kliknięciu; stan na <html> (gmap-on), a src ustawiany też na ramkach odtworzonych po przerysowaniu strony */
-(function(){var D=document,H=D.documentElement;
-function load(){[].forEach.call(D.querySelectorAll('iframe.gmap-f'),function(f){if(!f.getAttribute('src'))f.setAttribute('src',f.getAttribute('data-src'));});}
-D.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.gmap-on');if(!b||b.tagName!=='BUTTON')return;H.classList.add('gmap-on');load();});
-if('MutationObserver' in window)new MutationObserver(function(){if(H.classList.contains('gmap-on'))load();}).observe(D.documentElement,{childList:true,subtree:true});
-})();
-</script>
-"""
-MAP_HTML = ('<div class="map gmap" aria-label="Mapa: Plac Konstytucji 1"><span class="pin"></span>'
-            '<button type="button" class="btn btn-o gmap-on">Pokaż mapę Google</button>'
-            '<span class="cap gmap-note" style="color: #6F675C">Mapa wczyta się z serwerów Google. <a href="/polityka-prywatnosci#cookies">Prywatność</a></span>'
-            '<iframe class="gmap-f" title="Mapa: Ludwinek Aesthetic, Plac Konstytucji 1, Warszawa" loading="lazy" referrerpolicy="no-referrer-when-downgrade" '
-            'data-src="https://www.google.com/maps?q=Ludwinek+Aesthetic,+Plac+Konstytucji+1,+00-647+Warszawa&amp;output=embed"></iframe></div>')
+
+def mapy(s):
+    # Home: link-atrapa „Otwórz w Google Maps” → prawdziwa mapa z małym linkiem w rogu
+    s = re.sub(r'<a class="map([^"]*)" href="(https://www\.google\.com/maps/search/[^"]*)" target="_blank" rel="noopener" aria-label="[^"]*"( style="[^"]*")?><span class="pin"></span><span class="cap"[^>]*>Otwórz w Google Maps →</span></a>',
+               lambda m: f'<div class="map{m.group(1)} gmap"{m.group(3) or ""}>{MAP_IFRAME}<a class="cap gmap-open" href="{m.group(2)}" target="_blank" rel="noopener">Otwórz w Google Maps →</a></div>', s)
+    # Kontakt: atrapa z podpisem „Mapa Google”
+    s = re.sub(r'<div class="map" role="img" aria-label="Mapa: Plac Konstytucji 1"><span class="pin"></span><span class="cap"[^>]*>Mapa Google: Plac Konstytucji 1</span></div>',
+               '<div class="map gmap">' + MAP_IFRAME + '</div>', s)
+    if 'class="gmap-f"' in s:
+        h = s.find('</helmet>'); i = s.rfind('</style>', 0, h); s = s[:i] + MAP_CSS + s[i:]
+    return s
 
 def kontakt(s, key):
     if key != 'Kontakt':
         return s
-    s, n = re.subn(r'<div class="map" role="img" aria-label="Mapa: Plac Konstytucji 1"><span class="pin"></span><span class="cap"[^>]*>Mapa Google: Plac Konstytucji 1</span></div>', MAP_HTML, s)
-    assert n == 1, 'mapa nie znaleziona'
     # wiersze bez prawdziwych danych: wrócą z danymi
     s = s.replace('<div><dt>Dojazd</dt><dd>[parking / komunikacja: do uzupełnienia]</dd></div>', '')
     s = s.replace('<div><dt>Social</dt><dd><a href="https://instagram.com/">Instagram</a> · <a href="https://facebook.com/">Facebook</a></dd></div>', '')
-    h = s.find('</helmet>'); i = s.rfind('</style>', 0, h)
-    s = s[:i] + MAP_CSS + s[i:]
-    return s.replace('</body>', MAP_JS + '</body>', 1)
+    return s
 
 def convert(name, imgs):
     key, var = name.rsplit('-', 1)
@@ -204,6 +197,7 @@ def convert(name, imgs):
     s = legal(s)
     s = vouchers(s, key)
     s = kontakt(s, key)
+    s = mapy(s)
     t, d = TITLE[key]
     s = re.sub(r'<title>.*?</title>', lambda m: f'<title>{t}</title>\n<meta name="description" content="{d}">', s, count=1, flags=re.S)
     s = s.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n' + (HEAD_M if var == 'Mobile' else HEAD_D) + '\n' + HEAD_ALL, 1)
