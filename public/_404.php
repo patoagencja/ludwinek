@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
+<script>if(location.protocol==="http:"&&/(^|\.)ludwinekaesthetic\.pl$/.test(location.hostname))location.replace("https://ludwinekaesthetic.pl"+location.pathname+location.search+location.hash);</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1F1E1C">

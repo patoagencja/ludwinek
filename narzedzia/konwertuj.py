@@ -71,7 +71,8 @@ HEAD_D = '''<meta name="viewport" content="width=device-width, initial-scale=1">
 <script>(function(){var w=window.innerWidth,c=document.cookie;if(w<700&&c.indexOf('widok=')<0){document.cookie='widok=m;path=/;max-age=31536000;samesite=lax';location.reload();return;}function z(){var w=window.innerWidth;document.documentElement.style.zoom=w<1100?String(w/1440):'';}z();window.addEventListener('resize',z);})();</script>'''
 HEAD_M = '''<meta name="viewport" content="width=device-width, initial-scale=1">
 <script>(function(){var w=window.innerWidth,c=document.cookie;if(w>1000&&c.indexOf('widok=')<0){document.cookie='widok=d;path=/;max-age=31536000;samesite=lax';location.reload();}})();</script>'''
-HEAD_ALL = '''<meta name="theme-color" content="#1F1E1C">
+HEAD_ALL = '''<script>if(location.protocol==="http:"&&/(^|\\.)ludwinekaesthetic\\.pl$/.test(location.hostname))location.replace("https://ludwinekaesthetic.pl"+location.pathname+location.search+location.hash);</script>
+<meta name="theme-color" content="#1F1E1C">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">

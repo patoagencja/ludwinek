@@ -4,6 +4,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
+<script>if(location.protocol==="http:"&&/(^|\.)ludwinekaesthetic\.pl$/.test(location.hostname))location.replace("https://ludwinekaesthetic.pl"+location.pathname+location.search+location.hash);</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ludwinek Aesthetic · kosmetologia i medycyna estetyczna, Warszawa</title>
 <meta name="description" content="Gabinet Julii Ludwinek przy Placu Konstytucji w Warszawie: modelowanie ust, Dermapen 4.0 i terapie skóry. Nowa strona już wkrótce, na wizytę umówisz się przez Booksy.">

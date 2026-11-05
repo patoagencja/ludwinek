@@ -7,10 +7,8 @@ AddDefaultCharset utf-8
   # www → bez www, od razu na https
   RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
   RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L,NE]
-  # http → https
-  RewriteCond %{HTTPS} !=on
-  RewriteCond %{HTTP:X-Forwarded-Proto} !https
-  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
+  # http → https robi skrypt w <head> każdej strony (i opcja w panelu LH.pl): serwer LH.pl przekazuje każde zapytanie
+  # jako https (HTTPS=on, X-Forwarded-Proto: https), więc .htaccess nie odróżni wejścia przez http
   # pliki, które istnieją (zdjęcia, czcionki, skrypty), idą bez zmian; wszystko inne obsługuje index.php
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
