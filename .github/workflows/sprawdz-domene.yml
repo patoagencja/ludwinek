@@ -1,0 +1,22 @@
+name: Sprawdź domenę
+
+# Tylko sprawdzenie (bez wgrywania): DNS ludwinekaesthetic.pl, strona „Wkrótce” pod domeną i certyfikat SSL.
+# Uruchamia się pushem na gałąź „sprawdzenie” (np. pusty commit).
+on:
+  push:
+    branches: [ sprawdzenie ]
+
+jobs:
+  sprawdz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: DNS, strona i SSL
+        run: |
+          D=ludwinekaesthetic.pl; IP=195.2.223.12
+          for h in $D www.$D; do echo "DNS $h → $(getent hosts $h | awk '{print $1}' | head -1)"; done
+          echo "NS: $(dig +short NS $D 2>/dev/null | tr '\n' ' ')"
+          c=$(curl -s --max-time 30 -o b.txt -w '%{http_code}' "http://$D/" || echo 000)
+          if grep -q 'już wkrótce' b.txt; then echo "::notice::DOMENA_OK: http://$D pokazuje nową stronę"; else echo "::warning::DOMENA_STARA: http://$D pokazuje jeszcze coś innego (HTTP $c)"; fi
+          c=$(curl -s --max-time 30 -o /dev/null -w '%{http_code}' "https://$D/" || echo 000)
+          if [ "$c" = 200 ]; then echo "::notice::SSL_OK: https://$D działa"; else echo "::warning::SSL_BRAK: https://$D nie działa (HTTP $c)"; fi
