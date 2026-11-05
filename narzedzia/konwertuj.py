@@ -123,6 +123,38 @@ def legal(s):
                   'Zapoznałam się z <a href="/polityka-prywatnosci">informacją o przetwarzaniu danych</a>. Proszę, nie wpisuj tu informacji o zdrowiu: omówimy je na konsultacji.')
     return s
 
+VSOON_CSS = """
+/* vouchery wkrótce: sprzedaż online jeszcze nie działa (brak płatności), Klarna wyłączona */
+.klarna{display:none!important}
+.la a.vsoon-btn,.la a.vsoon-btn:hover{background:transparent!important;border-color:currentColor!important;color:inherit!important;opacity:.5;letter-spacing:.06em;white-space:nowrap;text-align:center;justify-content:center}
+@media (max-width:374px){.la a.vsoon-btn{font-size:10.5px;letter-spacing:.02em;padding:0 6px}}
+.vsoon{display:flex;flex-direction:column;gap:12px;margin-top:20px;padding:22px 22px 24px;background:#EFEBE4}
+.vsoon .h3{margin:0}
+.vsoon .btn{align-self:flex-start;margin-top:4px}
+"""
+
+def vouchers(s, key):
+    # przyciski „Kup voucher” → „Vouchery wkrótce” (wyszarzone; prowadzą do oferty, gdzie widać, że sprzedaż rusza wkrótce)
+    s = re.sub(r'(<a class="btn[^"]*)("[^>]*href="/vouchery[^"]*"[^>]*>)Kup voucher(?: online)?</a>', r'\1 vsoon-btn\2Vouchery wkrótce</a>', s)
+    # Klarna i raty: teksty w danych (pudełka z ratami chowa CSS)
+    for a, b in [(', także w 3 ratach 0% z Klarna.', '.'), ('Płatność BLIK, kartą lub w 3 ratach 0% z Klarna.', 'Sprzedaż online wkrótce.'),
+                 ('Vouchery online: BLIK, karta, przelew, Klarna (3 raty 0%)', 'Vouchery online: wkrótce'),
+                 (' Także w 3 ratach 0% z Klarna.', ''), ('voucher kupisz online w kilka minut', 'voucher kupisz online już wkrótce')]:
+        s = s.replace(a, b)
+    s = re.sub(r', \["Czy mogę zapłacić w ratach\? Tak, vouchery w 3 ratach 0% z Klarna"\]', '', s)
+    s = re.sub(r'"Czy mogę zapłacić w ratach\? Tak, vouchery w 3 ratach 0% z Klarna",\s*', '', s)
+    s = re.sub(r',\s*\["Jak działa płatność Klarna\?", "[^"]*", "klarna"\]', '', s)
+    s = s.replace('[6] miesięcy', '6 miesięcy')
+    if key == 'Voucher':
+        s = s.replace('<span>Do zapłaty</span>', '<span>Cena online</span>')
+        s, n = re.subn(r'<div class="\{\{ vpC\.mail \}\}".*?BLIK · karta · przelew · Klarna</p>',
+            '<div class="vsoon"><p class="lbl">Sprzedaż online</p><p class="h3">Vouchery kupisz tu <em>już wkrótce.</em></p>'
+            '<p class="sm" style="margin: 0">Masz pytanie o voucher? Napisz albo zadzwoń.</p>'
+            '<a class="btn btn-o" href="/kontakt#formularz">Zapytaj o voucher</a></div>', s, count=1, flags=re.S)
+        assert n == 1, 'blok płatności vouchera nie znaleziony'
+    h = s.find('</helmet>'); i = s.rfind('</style>', 0, h)
+    return s[:i] + VSOON_CSS + s[i:]
+
 def convert(name, imgs):
     key, var = name.rsplit('-', 1)
     s = open(os.path.join(SRC, name + '.html'), encoding='utf-8').read()
@@ -131,6 +163,7 @@ def convert(name, imgs):
     s = re.sub(r'<link rel="stylesheet" href="https://fonts\.googleapis\.com/css2[^"]*">', '<link rel="stylesheet" href="/assets/fonts.css">', s)
     s = links(s)
     s = legal(s)
+    s = vouchers(s, key)
     t, d = TITLE[key]
     s = re.sub(r'<title>.*?</title>', lambda m: f'<title>{t}</title>\n<meta name="description" content="{d}">', s, count=1, flags=re.S)
     s = s.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n' + (HEAD_M if var == 'Mobile' else HEAD_D) + '\n' + HEAD_ALL, 1)
