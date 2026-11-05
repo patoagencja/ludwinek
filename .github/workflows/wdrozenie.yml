@@ -47,8 +47,9 @@ jobs:
           R="--resolve $DOMENA:80:$IP --resolve $DOMENA:443:$IP --resolve www.$DOMENA:80:$IP"
           get() { curl -s $R --max-time 30 -o body.txt -D head.txt -w '%{http_code}' "$1" || echo 000; }
           c=$(get "https://$DOMENA/kontakt"); echo "http → $c $(grep -i '^location:' head.txt | tr -d '\r')"; [ "$c" = 301 ] && grep -qi '^location: https://ludwinekaesthetic.pl/kontakt' head.txt || { echo "::error::http nie przekierowuje na https (HTTP $c)"; ok=0; }
+          grep -i "^x-diag" head.txt || true
           c=$(get "http://www.$DOMENA/"); echo "www → $c $(grep -i '^location:' head.txt | tr -d '\r')"
-          c=$(get "https://$DOMENA/"); echo "/ → $c"
+          c=$(get "https://$DOMENA/"); echo "/ → $c"; grep -i "^x-diag" head.txt || true
           if [ "$c" = 200 ] && grep -q 'już wkrótce' body.txt; then echo "  strona „Wkrótce” OK"; else echo "::error::Strona główna nie pokazuje „Wkrótce” (HTTP $c)"; ok=0; fi
           c=$(get "https://$DOMENA/kontakt"); echo "/kontakt bez hasła → $c"; [ "$c" = 302 ] || { echo "::error::/kontakt bez hasła powinien przekierować (jest $c)"; ok=0; }
           c=$(get "https://$DOMENA/_strony/Home-Desktop.html"); echo "/_strony bez hasła → $c"; [ "$c" = 403 ] || { echo "::error::pliki stron dostępne bezpośrednio (HTTP $c)"; ok=0; }

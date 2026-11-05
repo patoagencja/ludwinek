@@ -57,11 +57,13 @@ h1 em{font-style:italic}
  .top{position:sticky;width:auto;padding:12px 18px;background:rgba(250,248,245,.94);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
  .brand{gap:14px}.brand .lm{height:34px}.brand .lw{height:26px}
  .wrap{grid-template-columns:1fr;min-height:0}
- .ph{order:-1;height:42vh;height:42svh;min-height:260px}
+ /* zdjęcie 1192x1800 na szerokość ekranu (wys. 1,51 × szer.): broda (52% wysokości) 70px nad dołem ramki, czubek głowy
+    (19,4%) nie wyżej niż górna krawędź; ramka zawsze mieści całą twarz */
+ .ph{order:-1;height:46vh;height:46svh;min-height:calc(80px + 49.2vw)}
+ .ph img{object-position:50% 30%;object-position:50% clamp(calc(max(46vh, 80px + 49.2vw) - 151vw), calc(max(46vh, 80px + 49.2vw) - 70px - 78.5vw), 0px);object-position:50% clamp(calc(max(46svh, 80px + 49.2vw) - 151vw), calc(max(46svh, 80px + 49.2vw) - 70px - 78.5vw), 0px)}
+ .ph::after{background:linear-gradient(180deg,rgba(250,248,245,0) 82%,var(--bg) 100%)}
  .kw{display:none}
- .ph::after{background:linear-gradient(180deg,rgba(250,248,245,0) 60%,var(--bg) 100%)}
- .ph img{object-position:50% 16%}
- .txt{padding:0 22px 28px;margin-top:-28px;position:relative;z-index:1}
+ .txt{padding:6px 22px 28px;margin-top:0;position:relative;z-index:1}
  .main{padding:0 0 36px}
  h1{margin-top:12px;font-size:clamp(40px,11.5vw,54px)}
  .lead{margin-top:16px;font-size:15.5px;line-height:1.6}
@@ -69,7 +71,8 @@ h1 em{font-style:italic}
  .btn{flex:1 1 150px;padding:0 18px}
  .laur{margin-top:34px}
 }
-@media (max-width:860px) and (max-height:620px){.ph{height:32vh;height:32svh;min-height:200px}h1{font-size:40px}}
+@media (max-width:380px){.kick{font-size:10px;letter-spacing:.1em}}
+@media (max-width:860px) and (max-height:620px){.lead{display:none}h1{font-size:38px}.cta{margin-top:18px}}
 </style>
 </head>
 <body>

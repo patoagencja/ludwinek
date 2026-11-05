@@ -19,6 +19,7 @@ const STRONY = [
 $path = trim((string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH), '/');
 $path = rawurldecode($path);
 $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+header('X-Diag: https=' . ($_SERVER['HTTPS'] ?? '-') . ' port=' . ($_SERVER['SERVER_PORT'] ?? '-') . ' scheme=' . ($_SERVER['REQUEST_SCHEME'] ?? '-') . ' xfp=' . ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '-'));
 $token = hash_hmac('sha256', 'ludwinek-podglad', HASLO_HASH);
 $wpuszczony = !PRZED_STARTEM || hash_equals($token, (string)($_COOKIE[CIASTKO] ?? ''));
 
