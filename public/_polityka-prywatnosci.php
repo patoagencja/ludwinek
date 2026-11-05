@@ -114,8 +114,10 @@ w ustawieniach przeglądarki.</p>
 <tr><td>widok</td><td>niezbędne</td><td>zapamiętuje, czy wyświetlać wersję strony na telefon, czy na komputer</td><td>12 miesięcy</td></tr>
 <tr><td>ludwinek_podglad</td><td>niezbędne</td><td>logowanie do podglądu strony przed jej startem (tylko osoby z hasłem)</td><td>60 dni</td></tr>
 </tbody></table></div>
-<p>Strona nie osadza treści z innych serwisów (map, filmów, wtyczek społecznościowych), a czcionki są na serwerze
-gabinetu, więc samo wejście na stronę nie przekazuje danych innym firmom. Linki do Booksy, Google Maps, Instagrama czy
+<p>Czcionki są na serwerze gabinetu, a strona nie osadza filmów ani wtyczek społecznościowych, więc samo wejście na
+stronę nie przekazuje danych innym firmom. Mapa Google na stronie Kontakt wczytuje się dopiero, gdy klikniesz „Pokaż
+mapę Google”; wtedy Google (Google Ireland Ltd.) otrzymuje m.in. Twój adres IP i może zapisać swoje pliki cookies,
+zgodnie z polityką prywatności Google. Linki do Booksy, Google Maps, Instagrama czy
 Facebooka prowadzą do tych serwisów; po ich otwarciu obowiązują ich zasady prywatności.</p>
 
 <h2 id="zmiany">9. Zmiany polityki</h2>
