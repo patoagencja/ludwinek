@@ -1,0 +1,57 @@
+name: Wgrywanie na serwer
+
+# Każdy push na main wgrywa public/ na serwer LH.pl (serwer534076) przez FTP z szyfrowaniem, a potem sprawdza stronę.
+# Login i hasło FTP są w sekretach repo: FTP_USERNAME, FTP_PASSWORD.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: wgrywanie
+  cancel-in-progress: false
+
+jobs:
+  wgraj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      FTP_HOST: serwer534076.lh.pl
+      DOMENA: ludwinekaesthetic.pl
+      IP: 195.2.223.12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalacja lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Wgraj public/ na serwer
+        env:
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          set -e
+          S="set ftp:ssl-allow true; set ssl:verify-certificate no; set ftp:passive-mode true; set net:max-retries 3; set net:timeout 30; set cmd:fail-exit true"
+          ftp() { lftp --env-password -u "$FTP_USER" -e "$S; $1; bye" "ftp://$FTP_HOST"; }
+          # konto FTP widzi albo /public_html (wtedy strona jest w podkatalogu domeny), albo od razu katalog domeny
+          if ftp "cd $DOMENA" >/dev/null 2>&1; then T="$DOMENA"; else T="."; fi
+          echo "Katalog strony na serwerze: $T"
+          ftp "cd $T; mirror -R --no-perms --parallel=4 --verbose=1 public/ ./"
+
+      - name: Sprawdź stronę
+        run: |
+          ok=1
+          dns=$(getent hosts "$DOMENA" | awk '{print $1}' | head -1)
+          echo "DNS $DOMENA → ${dns:-brak}"
+          if [ "$dns" != "$IP" ]; then echo "::warning::Domena $DOMENA nie wskazuje jeszcze na serwer ($IP), tylko na: ${dns:-nic}. Sprawdzam serwer bezpośrednio."; fi
+          R="--resolve $DOMENA:80:$IP --resolve $DOMENA:443:$IP"
+          get() { curl -s $R --max-time 30 -o body.txt -D head.txt -w '%{http_code}' "$1" || echo 000; }
+          c=$(get "http://$DOMENA/"); echo "/ → $c"
+          if [ "$c" = 200 ] && grep -q 'już wkrótce' body.txt; then echo "  strona „Wkrótce” OK"; else echo "::error::Strona główna nie pokazuje „Wkrótce” (HTTP $c)"; ok=0; fi
+          c=$(get "http://$DOMENA/kontakt"); echo "/kontakt bez hasła → $c"; [ "$c" = 302 ] || { echo "::error::/kontakt bez hasła powinien przekierować (jest $c)"; ok=0; }
+          c=$(get "http://$DOMENA/_strony/Home-Desktop.html"); echo "/_strony bez hasła → $c"; [ "$c" = 403 ] || { echo "::error::pliki stron dostępne bezpośrednio (HTTP $c)"; ok=0; }
+          c=$(get "http://$DOMENA/zaloguj"); echo "/zaloguj → $c"; [ "$c" = 200 ] || { echo "::error::/zaloguj nie działa (HTTP $c)"; ok=0; }
+          c=$(get "http://$DOMENA/assets/fonts.css"); echo "/assets/fonts.css → $c"; [ "$c" = 200 ] || { echo "::error::czcionki nie działają (HTTP $c)"; ok=0; }
+          c=$(curl -s $R --max-time 30 -o /dev/null -w '%{http_code}' "https://$DOMENA/" || echo 000)
+          if [ "$c" = 200 ]; then echo "::notice::https://$DOMENA działa (certyfikat SSL OK)"; else echo "::warning::https://$DOMENA nie działa (HTTP $c): włącz certyfikat SSL w LH.pl"; fi
+          [ $ok = 1 ] && echo "::notice::Strona wgrana i sprawdzona" || exit 1
