@@ -19,7 +19,8 @@ const STRONY = [
 $path = trim((string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH), '/');
 $path = rawurldecode($path);
 $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
-header('X-Diag: https=' . ($_SERVER['HTTPS'] ?? '-') . ' port=' . ($_SERVER['SERVER_PORT'] ?? '-') . ' scheme=' . ($_SERVER['REQUEST_SCHEME'] ?? '-') . ' xfp=' . ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '-'));
+header('X-Diag: ' . str_replace(["","
+"], '', json_encode(array_filter($_SERVER, function ($k) { return strpos($k, 'HTTP_') === 0 && $k !== 'HTTP_COOKIE' || in_array($k, ['HTTPS','SERVER_PORT','REQUEST_SCHEME','REMOTE_ADDR','SERVER_ADDR','SSL_PROTOCOL','REDIRECT_HTTPS'], true); }, ARRAY_FILTER_USE_KEY))));
 $token = hash_hmac('sha256', 'ludwinek-podglad', HASLO_HASH);
 $wpuszczony = !PRZED_STARTEM || hash_equals($token, (string)($_COOKIE[CIASTKO] ?? ''));
 
