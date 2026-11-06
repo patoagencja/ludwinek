@@ -24,7 +24,7 @@ ob_start();
 
 <h2 id="administrator">1. Kto przetwarza Twoje dane</h2>
 <p>Administratorem Twoich danych osobowych jest <?= administrator() ?>,
-<?= dana('adres') ?>, NIP <?= dana('nip') ?>, REGON <?= dana('regon') ?> (dalej: „gabinet”, „ja”).</p>
+adres siedziby: <?= dana('siedziba') ?>, adres gabinetu: <?= dana('adres') ?>, NIP <?= dana('nip') ?>, REGON <?= dana('regon') ?> (dalej: „gabinet”, „ja”).</p>
 <p>W sprawach danych osobowych napisz na <a href="mailto:<?= DANE['email'] ?>"><?= dana('email') ?></a>, zadzwoń pod
 <a href="tel:+48<?= str_replace(' ', '', DANE['telefon']) ?>"><?= dana('telefon') ?></a> albo napisz na adres gabinetu.
 Gabinet nie wyznaczył inspektora ochrony danych, bo nie ma takiego obowiązku.</p>

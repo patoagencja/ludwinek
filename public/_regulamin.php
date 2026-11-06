@@ -13,7 +13,7 @@ ob_start();
 <h2 id="s1">§ 1. Kto prowadzi stronę</h2>
 <ol>
 <li>Stronę <?= dana('domena') ?> (dalej: „strona”) prowadzi <?= administrator() ?>,
-<?= dana('adres') ?>, NIP <?= dana('nip') ?>, REGON <?= dana('regon') ?>, wpisana do Centralnej Ewidencji i Informacji
+adres siedziby: <?= dana('siedziba') ?>, adres gabinetu: <?= dana('adres') ?>, NIP <?= dana('nip') ?>, REGON <?= dana('regon') ?>, wpisana do Centralnej Ewidencji i Informacji
 o Działalności Gospodarczej (dalej: „gabinet”).</li>
 <li>Kontakt z gabinetem: e-mail <a href="mailto:<?= DANE['email'] ?>"><?= dana('email') ?></a>, telefon
 <a href="tel:+48<?= str_replace(' ', '', DANE['telefon']) ?>"><?= dana('telefon') ?></a>, adres gabinetu podany wyżej.</li>

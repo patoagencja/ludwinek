@@ -185,6 +185,35 @@ def kontakt(s, key):
     # wiersze bez prawdziwych danych: wrócą z danymi
     s = s.replace('<div><dt>Dojazd</dt><dd>[parking / komunikacja: do uzupełnienia]</dd></div>', '')
     s = s.replace('<div><dt>Social</dt><dd><a href="https://instagram.com/">Instagram</a> · <a href="https://facebook.com/">Facebook</a></dd></div>', '')
+    return formularz(s)
+
+# formularz „Zapytaj o termin”: prawdziwa wysyłka do public/_formularz.php (POST /formularz), ukryte pole na boty,
+# czas wypełniania, blokada przycisku w trakcie wysyłki i komunikat, gdy wysyłka się nie uda; bez kopii do klientki
+FORM_SEND = ("""        if (this.state.kfBusy) return;
+        const fd = new FormData(); Object.entries({ name: v.name, tel: v.tel, email: v.mail, zabieg: v.zab, termin: v.term, msg: v.msg, zgoda: v.ok ? '1' : '', strona: (f.elements.strona || {}).value || '', t: String(Date.now() - (window.__kfT0 || Date.now())) }).forEach(([k, x]) => fd.append(k, x));
+        this.setState({ kfBusy: true, kfFail: '' });
+        fetch('/formularz', { method: 'POST', body: fd, credentials: 'same-origin' }).then((r) => r.json().catch(() => ({})).then((j) => ({ r, j }))).then(({ r, j }) => {
+          if (r.ok && j.ok) { this.setState({ kfBusy: false, kfSent: v, kfErr: {}, kfTry: false }, () => { const h = document.getElementById('kf-done-h'); this.kfFocus(h); this.kfShow(document.getElementById('kf-done')); }); return; }
+          if (r.status === 422 && j.bledy) { this.setState({ kfBusy: false, kfErr: j.bledy, kfTry: true }); return; }
+          throw new Error(String(r.status));
+        }).catch((x) => this.setState({ kfBusy: false, kfFail: x && x.message === '429' ? 'Wysłano już kilka zapytań z tego urządzenia. Zadzwoń proszę: 737 460 105.' : 'Nie udało się wysłać wiadomości. Spróbuj ponownie albo zadzwoń: 737 460 105.' }));""")
+
+def formularz(s):
+    a = "        this.setState({ kfSent: v, kfErr: {}, kfTry: false }, () => { const h = document.getElementById('kf-done-h'); this.kfFocus(h); this.kfShow(document.getElementById('kf-done')); });"
+    assert s.count(a) == 1
+    s = s.replace(a, FORM_SEND)
+    a = 'kfOpen: !kfS, kfDone: !!kfS, kfE,'
+    assert s.count(a) == 1
+    s = s.replace(a, a + " kfFail: st.kfFail || '', kfBtn: st.kfBusy ? 'Wysyłam…' : 'Wyślij zapytanie', kfBusy: !!st.kfBusy,")
+    s = s.replace("kfSent: null, kfErr: {}, kfTry: false };", "kfSent: null, kfErr: {}, kfTry: false, kfBusy: false, kfFail: '' };\n    window.__kfT0 = Date.now();", 1)
+    a = '<div style="grid-column: 1 / -1" class="kf-send"><button type="submit" class="btn">Wyślij zapytanie</button>'
+    assert s.count(a) == 1
+    s = s.replace(a, '<div class="kf-hp" aria-hidden="true"><label for="k9">Strona www</label><input id="k9" name="strona" tabindex="-1" autocomplete="off"></div>'
+                  '<sc-if value="{{ kfFail }}" hint-placeholder-val="{{ false }}"><p class="ferr" role="alert" style="grid-column: 1 / -1; margin: 0">{{ kfFail }}</p></sc-if>'
+                  '<div style="grid-column: 1 / -1" class="kf-send"><button type="submit" class="btn">{{ kfBtn }}</button>')
+    s, n = re.subn(r'<sc-if value="\{\{ kfHasMail \}\}".*?</sc-if>', '', s, count=1, flags=re.S)
+    assert n == 1
+    s = s.replace('</style>', '.kf-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}\n</style>', 1)
     return s
 
 def convert(name, imgs):

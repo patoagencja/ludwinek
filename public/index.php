@@ -63,6 +63,11 @@ if ($path === 'wyloguj') {
     exit;
 }
 
+if ($path === 'formularz') {
+    require __DIR__ . '/_formularz.php';
+    exit;
+}
+
 // dokumenty prawne są publiczne także przed startem (strona „Wkrótce” do nich linkuje)
 const DOKUMENTY = ['polityka-prywatnosci' => '_polityka-prywatnosci.php', 'regulamin' => '_regulamin.php'];
 if (isset(DOKUMENTY[$path])) {

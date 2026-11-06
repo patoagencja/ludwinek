@@ -1,22 +1,23 @@
 <?php
-// Dane gabinetu do dokumentów prawnych. Uzupełnić zgodnie z wpisem w CEIDG przed startem strony.
-// Puste pole = dokument pokazuje „uzupełnimy przed startem” (strona i tak jest za hasłem).
+// Dane gabinetu do dokumentów prawnych, zgodnie z wpisem w CEIDG (J.L Julia Ludwinek, NIP 6572998853).
+// Puste pole = dokument pokazuje „uzupełnimy wkrótce”.
 const DANE = [
-    'wlasciciel' => '',                  // imię i nazwisko przedsiębiorcy, np. „Julia Ludwinek”
-    'firma'      => '',                  // pełna nazwa firmy z CEIDG, np. „Ludwinek Aesthetic Julia Ludwinek”
-    'nip'        => '',
-    'regon'      => '',
+    'wlasciciel' => 'Julia Ludwinek',              
+    'firma'      => 'J.L Julia Ludwinek',              
+    'nip'        => '6572998853',
+    'regon'      => '541967128',
+    'siedziba'   => 'ul. Zagnańska 78B/7, 25-528 Kielce', // adres siedziby z CEIDG
     'adres'      => 'Plac Konstytucji 1, 00-647 Warszawa',
     'email'      => 'ludwinekaesthetic@gmail.com',
     'telefon'    => '737 460 105',
     'domena'     => 'ludwinekaesthetic.pl',
-    'od'         => '5 listopada 2026',  // od kiedy obowiązują dokumenty
+    'od'         => '6 listopada 2026',  // od kiedy obowiązują dokumenty
 ];
 
 function dana(string $k): string
 {
     $v = DANE[$k] ?? '';
-    return $v !== '' ? htmlspecialchars($v) : '<em>(uzupełnimy przed startem strony)</em>';
+    return $v !== '' ? htmlspecialchars($v) : '<em>(uzupełnimy wkrótce)</em>';
 }
 
 /** Kto prowadzi gabinet, do zdań „Administratorem jest …” i „Stronę prowadzi …”. */

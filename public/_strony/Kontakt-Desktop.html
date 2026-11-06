@@ -449,6 +449,7 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 .vsoon{display:flex;flex-direction:column;gap:12px;margin-top:20px;padding:22px 22px 24px;background:#EFEBE4}
 .vsoon .h3{margin:0}
 .vsoon .btn{align-self:flex-start;margin-top:4px}
+.kf-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
 
 /* mapa Google (osadzona, widoczna od razu) w miejscu atrapy mapy z projektu */
 .map.gmap{overflow:hidden}
@@ -496,13 +497,13 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 <div class="fld"><label for="k6">Preferowany termin</label><input id="k6" name="termin" placeholder="np. czwartek po 17:00"></div>
 <div class="fld" style="grid-column: 1 / -1"><label for="k4">Wiadomość (opcjonalnie)</label><textarea id="k4" name="msg"></textarea></div>
 <div class="{{ kfC.ok }}" style="grid-column: 1 / -1"><label class="chk"><input id="k7" name="zgoda" type="checkbox" aria-required="true" aria-invalid="{{ kfI.ok }}" aria-describedby="k7-e"><span>Zapoznałam się z <a href="/polityka-prywatnosci">informacją o przetwarzaniu danych</a>. Proszę, nie wpisuj tu informacji o zdrowiu: omówimy je na konsultacji.</span></label><sc-if value="{{ kfE.ok }}" hint-placeholder-val="{{ false }}"><p class="ferr" id="k7-e">{{ kfE.ok }}</p></sc-if></div>
-<div style="grid-column: 1 / -1" class="kf-send"><button type="submit" class="btn">Wyślij zapytanie</button><p class="sm" style="margin: 0"><span class="rq" aria-hidden="true">*</span> pola wymagane</p></div>
+<div class="kf-hp" aria-hidden="true"><label for="k9">Strona www</label><input id="k9" name="strona" tabindex="-1" autocomplete="off"></div><sc-if value="{{ kfFail }}" hint-placeholder-val="{{ false }}"><p class="ferr" role="alert" style="grid-column: 1 / -1; margin: 0">{{ kfFail }}</p></sc-if><div style="grid-column: 1 / -1" class="kf-send"><button type="submit" class="btn">{{ kfBtn }}</button><p class="sm" style="margin: 0"><span class="rq" aria-hidden="true">*</span> pola wymagane</p></div>
 </form></sc-if>
 <sc-if value="{{ kfDone }}" hint-placeholder-val="{{ false }}"><div class="kf-done" id="kf-done" role="status">
 <p class="lbl">Wiadomość wysłana</p>
 <h3 class="h2" id="kf-done-h" tabindex="-1">Dziękuję <em>za kontakt.</em></h3>
 <p class="p">Twoja wiadomość do mnie dotarła. Oddzwonię na numer <b class="kf-tel">{{ kfTel }}</b> tak szybko, jak to możliwe, żeby ustalić termin i odpowiedzieć na Twoje pytania.</p>
-<sc-if value="{{ kfHasMail }}" hint-placeholder-val="{{ false }}"><p class="sm kf-mail">Potwierdzenie z kopią wiadomości wysłałam na adres <b>{{ kfMail }}</b>. <a href="/#kontakt-potwierdzenie">Zobacz ten mail</a></p></sc-if>
+
 <p class="sm" style="margin: 0">Wolisz od razu wybrać termin? Wizytę możesz zarezerwować online przez Booksy.</p>
 <div class="kf-acts"><a class="btn btn-book" href="https://booksy.com/pl-pl/307000_ludwinek-aesthetic_medycyna-estetyczna_3_warszawa" target="_blank" rel="noopener">Umów wizytę (Booksy)</a><button type="button" class="tl kf-again" onClick="{{ kfAgain }}">Wyślij kolejne zapytanie</button></div>
 </div></sc-if>
@@ -543,7 +544,8 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 class Component extends DCLogic {
   constructor(...a) {
     super(...a);
-    this.state = { drawer: null, fq: 0, pos: 50, cas: 0, vg: 0, cat: 0, vt: 0, vz: 0, va: 1, inf: 0, kfSent: null, kfErr: {}, kfTry: false };
+    this.state = { drawer: null, fq: 0, pos: 50, cas: 0, vg: 0, cat: 0, vt: 0, vz: 0, va: 1, inf: 0, kfSent: null, kfErr: {}, kfTry: false, kfBusy: false, kfFail: '' };
+    window.__kfT0 = Date.now();
   }
   kfRead(f) {
     const g = (n) => { const el = f.elements[n]; return !el ? '' : el.type === 'checkbox' ? el.checked : String(el.value || '').trim(); };
@@ -590,7 +592,7 @@ class Component extends DCLogic {
     const kfCls = (k, base) => base + (kfE[k] ? ' bad' : '');
     const kfFmt = (t) => { const d = String(t || '').replace(/\D/g, ''); return d.length === 9 ? d.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3') : d.length === 11 && d.slice(0, 2) === '48' ? '+48 ' + d.slice(2).replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3') : t; };
     const kfVals = {
-      kfOpen: !kfS, kfDone: !!kfS, kfE,
+      kfOpen: !kfS, kfDone: !!kfS, kfE, kfFail: st.kfFail || '', kfBtn: st.kfBusy ? 'Wysyłam…' : 'Wyślij zapytanie', kfBusy: !!st.kfBusy,
       kfI: { name: !!kfE.name, tel: !!kfE.tel, mail: !!kfE.mail, ok: !!kfE.ok },
       kfC: { name: kfCls('name', 'fld'), tel: kfCls('tel', 'fld'), mail: kfCls('mail', 'fld'), ok: kfCls('ok', 'kchk') },
       kfTel: kfS ? kfFmt(kfS.tel) : '', kfMail: kfS ? kfS.mail : '', kfHasMail: !!(kfS && kfS.mail),
@@ -602,7 +604,14 @@ class Component extends DCLogic {
           this.setState({ kfErr: err, kfTry: true }, () => { const el = document.getElementById(ids[ks[0]]); this.kfFocus(el); this.kfShow(el && (el.closest('.fld') || el.closest('.kchk'))); });
           return;
         }
-        this.setState({ kfSent: v, kfErr: {}, kfTry: false }, () => { const h = document.getElementById('kf-done-h'); this.kfFocus(h); this.kfShow(document.getElementById('kf-done')); });
+        if (this.state.kfBusy) return;
+        const fd = new FormData(); Object.entries({ name: v.name, tel: v.tel, email: v.mail, zabieg: v.zab, termin: v.term, msg: v.msg, zgoda: v.ok ? '1' : '', strona: (f.elements.strona || {}).value || '', t: String(Date.now() - (window.__kfT0 || Date.now())) }).forEach(([k, x]) => fd.append(k, x));
+        this.setState({ kfBusy: true, kfFail: '' });
+        fetch('/formularz', { method: 'POST', body: fd, credentials: 'same-origin' }).then((r) => r.json().catch(() => ({})).then((j) => ({ r, j }))).then(({ r, j }) => {
+          if (r.ok && j.ok) { this.setState({ kfBusy: false, kfSent: v, kfErr: {}, kfTry: false }, () => { const h = document.getElementById('kf-done-h'); this.kfFocus(h); this.kfShow(document.getElementById('kf-done')); }); return; }
+          if (r.status === 422 && j.bledy) { this.setState({ kfBusy: false, kfErr: j.bledy, kfTry: true }); return; }
+          throw new Error(String(r.status));
+        }).catch((x) => this.setState({ kfBusy: false, kfFail: x && x.message === '429' ? 'Wysłano już kilka zapytań z tego urządzenia. Zadzwoń proszę: 737 460 105.' : 'Nie udało się wysłać wiadomości. Spróbuj ponownie albo zadzwoń: 737 460 105.' }));
       },
       kfInput: (e) => {
         const s = this.state; if (!s.kfTry) return;
