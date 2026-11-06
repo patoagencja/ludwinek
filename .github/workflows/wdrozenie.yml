@@ -48,10 +48,13 @@ jobs:
           get() { curl -s $R --max-time 30 -o body.txt -D head.txt -w '%{http_code}' "$1" || echo 000; }
           c=$(get "http://www.$DOMENA/"); echo "www → $c $(grep -i '^location:' head.txt | tr -d '\r')"
           c=$(get "https://$DOMENA/"); echo "/ → $c"; grep -q "location.protocol" body.txt || { echo "::error::brak przekierowania http → https w stronie"; ok=0; }
-          if [ "$c" = 200 ] && grep -q 'już wkrótce' body.txt; then echo "  strona „Wkrótce” OK"; else echo "::error::Strona główna nie pokazuje „Wkrótce” (HTTP $c)"; ok=0; fi
-          c=$(get "https://$DOMENA/kontakt"); echo "/kontakt bez hasła → $c"; [ "$c" = 302 ] || { echo "::error::/kontakt bez hasła powinien przekierować (jest $c)"; ok=0; }
+          if [ "$c" = 200 ] && ! grep -q 'już wkrótce' body.txt && grep -q 'Ludwinek' body.txt; then echo "  pełna strona OK"; else echo "::error::Strona główna nie pokazuje pełnej strony (HTTP $c)"; ok=0; fi
+          for a in modelowanie-ust zabiegi dermapen terapia-blizn-i-rozstepow zabiegi-pielegnacyjne event-glow signature-glow dla-mezczyzn blizny-potradzikowe cennik vouchery o-mnie informacje kontakt polityka-prywatnosci regulamin; do
+            c=$(get "https://$DOMENA/$a"); [ "$c" = 200 ] || { echo "::error::/$a → $c"; ok=0; }
+          done
+          c=$(curl -s $R --max-time 30 -o /dev/null -w '%{http_code}' -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile' "https://$DOMENA/kontakt" || echo 000); echo "/kontakt na telefonie → $c"; [ "$c" = 200 ] || ok=0
+          c=$(get "https://$DOMENA/sitemap.xml"); echo "/sitemap.xml → $c"; [ "$c" = 200 ] || { echo "::error::brak sitemap.xml"; ok=0; }
           c=$(get "https://$DOMENA/_strony/Home-Desktop.html"); echo "/_strony bez hasła → $c"; [ "$c" = 403 ] || { echo "::error::pliki stron dostępne bezpośrednio (HTTP $c)"; ok=0; }
-          c=$(get "https://$DOMENA/zaloguj"); echo "/zaloguj → $c"; [ "$c" = 200 ] || { echo "::error::/zaloguj nie działa (HTTP $c)"; ok=0; }
           c=$(get "https://$DOMENA/assets/fonts.css"); echo "/assets/fonts.css → $c"; [ "$c" = 200 ] || { echo "::error::czcionki nie działają (HTTP $c)"; ok=0; }
           c=$(curl -s $R --max-time 30 -o /dev/null -w '%{http_code}' "https://$DOMENA/" || echo 000)
           if [ "$c" = 200 ]; then echo "::notice::https://$DOMENA działa (certyfikat SSL OK)"; else echo "::warning::https://$DOMENA nie działa (HTTP $c): włącz certyfikat SSL w LH.pl"; fi

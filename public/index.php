@@ -2,10 +2,10 @@
 // ludwinekaesthetic.pl: przed startem wszyscy widzą stronę „Wkrótce” (_wkrotce.php), a pełna strona otwiera się dopiero
 // po haśle (/zaloguj). Pełna strona to dokumenty z _strony/: telefony dostają wersję Mobile, reszta Desktop
 // (ciasteczko „widok” = m/d nadpisuje wybór; strony same je ustawiają, gdy okno nie pasuje do wersji).
-// START STRONY: ustaw PRZED_STARTEM na false; wtedy pełna strona jest dla wszystkich, a /zaloguj nie jest potrzebne.
+// Strona wystartowała (PRZED_STARTEM = false): pełna strona jest dla wszystkich. Powrót do „Wkrótce”: ustaw true.
 declare(strict_types=1);
 
-const PRZED_STARTEM = true;
+const PRZED_STARTEM = false;
 const HASLO_HASH = '$2y$12$HDfHP/AmBFipOwPs/BkPcOaiQ3Ha6tq67mnSHbjYMxQD3GqwVx/iq';
 const CIASTKO = 'ludwinek_podglad';
 
@@ -72,7 +72,7 @@ if (isset(DOKUMENTY[$path])) {
     exit;
 }
 
-if (!$wpuszczony || ($path === '' && isset($_GET['wkrotce']))) {
+if (!$wpuszczony || (PRZED_STARTEM && $path === '' && isset($_GET['wkrotce']))) {
     if ($path === '') {
         header('Content-Type: text/html; charset=utf-8');
         header('Cache-Control: no-store');
