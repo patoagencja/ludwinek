@@ -1,2 +1,5 @@
 zrodlo/imgs.json
 .DS_Store
+# zmiany z panelu żyją tylko na serwerze
+public/_panel-dane/
+public/img/p/

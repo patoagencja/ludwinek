@@ -24,21 +24,29 @@ $wpuszczony = !PRZED_STARTEM || hash_equals($token, (string)($_COOKIE[CIASTKO] ?
 
 function wyslij_strone(string $klucz, bool $prywatna): void
 {
-    $widok = $_COOKIE['widok'] ?? '';
+    require_once __DIR__ . '/_edycje.php';
+    // podgląd w panelu (/panel): wersja wybrana w panelu i skrypt do klikania w teksty i zdjęcia
+    $wPanelu = isset($_GET['panel']) && function_exists('panel_zalogowany') && panel_zalogowany();
+    $widok = $wPanelu ? (string)($_GET['widok'] ?? 'd') : ($_COOKIE['widok'] ?? '');
     if ($widok !== 'm' && $widok !== 'd') {
         $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
         $widok = preg_match('/iPhone|iPod|Android.+Mobile|Mobile.+Firefox|Windows Phone|Opera Mini|BlackBerry|webOS/i', $ua) ? 'm' : 'd';
     }
     $plik = __DIR__ . '/_strony/' . $klucz . '-' . ($widok === 'm' ? 'Mobile' : 'Desktop') . '.html';
+    $html = edycje_zastosuj((string)file_get_contents($plik), $klucz);
     header('Content-Type: text/html; charset=utf-8');
     header('Vary: User-Agent, Cookie');
-    if ($prywatna) {
+    if ($prywatna || $wPanelu) {
         header('X-Robots-Tag: noindex, nofollow');
         header('Cache-Control: private, no-store');
     } else {
-        header('Cache-Control: public, max-age=300');
+        header('Cache-Control: public, max-age=60');
     }
-    readfile($plik);
+    if ($wPanelu) {
+        $v = (string)@filemtime(__DIR__ . '/assets/panel-edytor.js');
+        $html = str_replace('</body>', '<script src="/assets/panel-edytor.js?v=' . $v . '" data-strona="' . htmlspecialchars($klucz) . '"></script></body>', $html);
+    }
+    echo $html;
 }
 
 if ($path === 'zaloguj') {
@@ -61,6 +69,15 @@ if ($path === 'wyloguj') {
     setcookie(CIASTKO, '', ['expires' => time() - 3600, 'path' => '/', 'secure' => $https, 'httponly' => true, 'samesite' => 'Lax']);
     header('Location: /', true, 303);
     exit;
+}
+
+// panel do edycji strony dla gabinetu (_panel.php); funkcje panelu są potrzebne też podglądowi stron
+if ($path === 'panel' || strpos($path, 'panel/') === 0) {
+    require __DIR__ . '/_panel.php';
+    exit;
+}
+if (isset($_GET['panel'])) {
+    require_once __DIR__ . '/_panel-auth.php';
 }
 
 if ($path === 'formularz') {

@@ -36,7 +36,19 @@ jobs:
           # konto FTP widzi albo /public_html (wtedy strona jest w podkatalogu domeny), albo od razu katalog domeny
           if ftp "cd $DOMENA" >/dev/null 2>&1; then T="$DOMENA"; else T="."; fi
           echo "Katalog strony na serwerze: $T"
+          # kopia zmian zrobionych w panelu (/panel) przed wgraniem: leżą tylko na serwerze, wgrywanie ich nie rusza
+          mkdir -p kopia-panelu
+          ftp "cd $T; mirror --no-perms _panel-dane kopia-panelu/_panel-dane; mirror --no-perms img/p kopia-panelu/img-p" >/dev/null 2>&1 || true
+          echo "Kopia panelu: $(find kopia-panelu -type f | wc -l) plików"
           ftp "cd $T; mirror -R --no-perms --parallel=4 --verbose=1 public/ ./"
+
+      - name: Kopia zmian z panelu
+        uses: actions/upload-artifact@v4
+        with:
+          name: kopia-panelu
+          path: kopia-panelu
+          retention-days: 90
+          if-no-files-found: ignore
 
       - name: Sprawdź stronę
         run: |
@@ -55,6 +67,8 @@ jobs:
           c=$(curl -s $R --max-time 30 -o /dev/null -w '%{http_code}' -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile' "https://$DOMENA/kontakt" || echo 000); echo "/kontakt na telefonie → $c"; [ "$c" = 200 ] || ok=0
           c=$(get "https://$DOMENA/sitemap.xml"); echo "/sitemap.xml → $c"; [ "$c" = 200 ] || { echo "::error::brak sitemap.xml"; ok=0; }
           c=$(curl -s $R --max-time 30 -o body.txt -w '%{http_code}' -X POST -d name=x -d t=5000 "https://$DOMENA/formularz" || echo 000); echo "/formularz (błędne dane, bez wysyłki) → $c"; [ "$c" = 422 ] && grep -q bledy body.txt || { echo "::error::formularz nie odpowiada poprawnie (HTTP $c)"; ok=0; }
+          c=$(get "https://$DOMENA/panel"); echo "/panel → $c"; [ "$c" = 200 ] && grep -q 'Panel' body.txt || { echo "::error::panel nie działa (HTTP $c)"; ok=0; }
+          c=$(get "https://$DOMENA/_panel-dane/_edycje.json"); echo "/_panel-dane bez logowania → $c"; [ "$c" = 403 ] || [ "$c" = 404 ] || { echo "::error::dane panelu dostępne publicznie (HTTP $c)"; ok=0; }
           c=$(get "https://$DOMENA/_strony/Home-Desktop.html"); echo "/_strony bez hasła → $c"; [ "$c" = 403 ] || { echo "::error::pliki stron dostępne bezpośrednio (HTTP $c)"; ok=0; }
           c=$(get "https://$DOMENA/assets/fonts.css"); echo "/assets/fonts.css → $c"; [ "$c" = 200 ] || { echo "::error::czcionki nie działają (HTTP $c)"; ok=0; }
           c=$(curl -s $R --max-time 30 -o /dev/null -w '%{http_code}' "https://$DOMENA/" || echo 000)

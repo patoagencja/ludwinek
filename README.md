@@ -7,3 +7,7 @@ Strona gabinetu Ludwinek Aesthetic (Julia Ludwinek, Plac Konstytucji 1, Warszawa
 - Strona jest publiczna (`PRZED_STARTEM = false` w `public/index.php`). Ustawienie `true` przywraca stronę „Wkrótce” (`public/_wkrotce.php`) z pełną stroną po haśle pod `/zaloguj`.
 - `public/_strony/` to podstrony w dwóch wersjach (Desktop, Mobile); `public/index.php` wybiera wersję i adres.
 - `zrodlo/strony/` to ten sam projekt w formie z podglądu; `narzedzia/konwertuj.py` robi z niego `public/_strony/`.
+- Panel dla Julii: `/panel` (hasło w `public/_panel-auth.php` jako skrót bcrypt). Klik w tekst lub zdjęcie na podglądzie i zamiana.
+  Zmiany leżą tylko na serwerze (`_panel-dane/_edycje.json`, zdjęcia w `img/p/`) i są nakładane na strony przy wysyłce
+  (`public/_edycje.php`), więc wgrywanie z repo ich nie nadpisuje. Każde wdrożenie robi ich kopię (artefakt „kopia-panelu”).
+  Uwaga: jeśli zmienisz w `zrodlo/` tekst, który Julia już edytowała, jej zmiana przestanie działać (panel to pokaże).
