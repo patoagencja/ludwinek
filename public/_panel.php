@@ -107,6 +107,8 @@ if (!panel_zalogowany()) {
         if (count($proby) < 10 && password_verify((string)($_POST['haslo'] ?? ''), PANEL_HASLO_HASH)) {
             $do = time() + PANEL_DNI * 86400;
             setcookie(PANEL_CIASTKO, panel_token($do), ['expires' => $do, 'path' => '/', 'secure' => $https, 'httponly' => true, 'samesite' => 'Lax']);
+            // to urządzenie gabinetu: jego wizyty GA4 oznacza jako ruch wewnętrzny (traffic_type=internal), żeby nie psuły statystyk
+            setcookie('ludwinek_wewn', '1', ['expires' => time() + 5 * 365 * 86400, 'path' => '/', 'secure' => $https, 'httponly' => false, 'samesite' => 'Lax']);
             header('Location: /panel', true, 303);
             exit;
         }

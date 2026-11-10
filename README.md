@@ -11,3 +11,4 @@ Strona gabinetu Ludwinek Aesthetic (Julia Ludwinek, Plac Konstytucji 1, Warszawa
   Zmiany leżą tylko na serwerze (`_panel-dane/_edycje.json`, zdjęcia w `img/p/`) i są nakładane na strony przy wysyłce
   (`public/_edycje.php`), więc wgrywanie z repo ich nie nadpisuje. Każde wdrożenie robi ich kopię (artefakt „kopia-panelu”).
   Uwaga: jeśli zmienisz w `zrodlo/` tekst, który Julia już edytowała, jej zmiana przestanie działać (panel to pokaże).
+- Analityka GA4 (G-5LJXC4VE72): `docs/analityka.md` (zdarzenia, lejek, ustawienia w GA4).

@@ -7,11 +7,13 @@
    zawsze otwiera ustawienia. Podgląd banera: dopisz do adresu ?zgody=pokaz. */
 (function () {
   'use strict';
-  var GA4_ID = '';          // np. 'G-XXXXXXXXXX'
+  var GA4_ID = 'G-5LJXC4VE72'; // Google Analytics 4, strumień ludwinekaesthetic.pl (ten sam w _dane.php)
   var META_PIXEL_ID = '';   // np. '1234567890'
   var NAZWA = 'zgody', WERSJA = 1, WAZNOSC_DNI = 365;
 
   var D = document, H = D.documentElement;
+  // podgląd w panelu edycji (/panel) nie liczy się do statystyk
+  if (/[?&]panel=1\b/.test(location.search)) { GA4_ID = ''; META_PIXEL_ID = ''; }
   var narzedzia = { a: !!GA4_ID, m: !!META_PIXEL_ID };
   var podglad = /[?&]zgody=pokaz\b/.test(location.search);
   if (!narzedzia.a && !narzedzia.m && !podglad) { narzedzia.brak = true; }
@@ -28,6 +30,17 @@
   }
 
   var zaladowane = { a: false, m: false };
+  function grupa() {
+    var p = location.pathname.replace(/\/+$/, '') || '/';
+    if (p === '/') return 'Strona główna';
+    if (/^\/(modelowanie-ust|dermapen|terapia-blizn-i-rozstepow|zabiegi-pielegnacyjne|event-glow|signature-glow|dla-mezczyzn)$/.test(p)) return 'Zabieg';
+    return { '/zabiegi': 'Lista zabiegów', '/blizny-potradzikowe': 'Problem skóry', '/cennik': 'Cennik', '/vouchery': 'Vouchery', '/o-mnie': 'O mnie',
+      '/informacje': 'Informacje', '/kontakt': 'Kontakt', '/polityka-prywatnosci': 'Dokumenty', '/regulamin': 'Dokumenty' }[p] || 'Inne';
+  }
+  function wczytajPomiar() {
+    if (D.getElementById('la-analityka')) return;
+    var s = D.createElement('script'); s.id = 'la-analityka'; s.async = true; s.src = '/assets/analityka.js?v=1'; D.head.appendChild(s);
+  }
   function uruchom(z) {
     if (!z) return;
     if (z.a && GA4_ID && !zaladowane.a) {
@@ -37,7 +50,10 @@
       window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: z.m ? 'granted' : 'denied',
         ad_user_data: z.m ? 'granted' : 'denied', ad_personalization: z.m ? 'granted' : 'denied' });
       window.gtag('js', new Date());
-      window.gtag('config', GA4_ID, { anonymize_ip: true });
+      // grupa treści (raport „Grupy treści”) i ruch wewnętrzny gabinetu (ciasteczko z panelu: filtr „Internal Traffic” w GA4)
+      var cfg = { content_group: grupa() };
+      if (/(?:^|;\s*)ludwinek_wewn=1/.test(D.cookie)) cfg.traffic_type = 'internal';
+      window.gtag('config', GA4_ID, cfg);
       var s = D.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA4_ID); D.head.appendChild(s);
     }
     if (z.m && META_PIXEL_ID && !zaladowane.m) {
@@ -48,6 +64,7 @@
         s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, D, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
       window.fbq('init', META_PIXEL_ID); window.fbq('track', 'PageView');
     }
+    if (zaladowane.a || zaladowane.m) wczytajPomiar();
   }
 
   var CSS = '' +
@@ -104,6 +121,30 @@
     var pierwszy = b.querySelector('button'); if (pierwszy && ustawienia) pierwszy.focus();
   }
   function zamknij(b) { b.classList.remove('on'); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 260); }
+
+  /* Zdarzenia (tylko po zgodzie, gdy narzędzie jest załadowane). Kluczowe dla gabinetu:
+     generate_lead (wysłany formularz), klik_booksy (przejście do rezerwacji), klik_telefon, klik_email.
+     window.laZdarzenie(nazwa, parametry) wołają też strony (np. formularz po udanej wysyłce). */
+  var META = { generate_lead: 'Lead', klik_booksy: 'Schedule', klik_telefon: 'Contact', klik_email: 'Contact', klik_whatsapp: 'Contact', view_item: 'ViewContent', begin_checkout: 'InitiateCheckout', purchase: 'Purchase' };
+  window.laZdarzenie = function (nazwa, par) {
+    par = par || {};
+    try { if (zaladowane.a && window.gtag) window.gtag('event', nazwa, par); } catch (e) {}
+    try { if (zaladowane.m && window.fbq && META[nazwa]) { var it = par.items && par.items[0]; window.fbq('track', META[nazwa], it ? { content_name: it.item_name, content_category: it.item_category, currency: 'PLN', value: par.value || 0 } : par.zabieg ? { content_name: par.zabieg } : {}); } } catch (e) {}
+  };
+  function tekst(el) { return String(el.getAttribute('aria-label') || el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80); }
+  D.addEventListener('click', function (e) {
+    if (!zaladowane.a && !zaladowane.m) return;
+    var a = e.target.closest && e.target.closest('a[href],button'); if (!a) return;
+    var h = a.getAttribute('href') || '', par = { link_text: tekst(a), strona: location.pathname };
+    if (window.laKontekst) { var k = window.laKontekst(a); par.sekcja = k.sekcja; par.zabieg = k.zabieg; }
+    if (/booksy\.com/i.test(h)) window.laZdarzenie('klik_booksy', par);
+    else if (/^tel:/i.test(h)) window.laZdarzenie('klik_telefon', par);
+    else if (/^mailto:/i.test(h)) window.laZdarzenie('klik_email', par);
+    else if (/wa\.me|whatsapp/i.test(h)) window.laZdarzenie('klik_whatsapp', par);
+    else if (/google\.[a-z.]+\/maps|maps\.app\.goo|goo\.gl\/maps/i.test(h)) window.laZdarzenie('klik_mapa', par);
+    else if (/instagram\.com|facebook\.com|tiktok\.com/i.test(h)) window.laZdarzenie('klik_social', par);
+    else if (a.classList.contains('vsoon-btn')) window.laZdarzenie('klik_voucher', par);
+  }, true);
 
   // link „Ustawienia cookies” w stopce (działa też, gdy strona jest jeszcze renderowana)
   D.addEventListener('click', function (e) {

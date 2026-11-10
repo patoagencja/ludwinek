@@ -40,6 +40,8 @@ społecznościowych) oraz obsługi wizyt w gabinecie.</p>
 <tr><td>Rozliczenia, rachunki i faktury, obowiązki podatkowe i księgowe</td><td>dane do rachunku lub faktury, kwoty</td><td>art. 6 ust. 1 lit. c (obowiązek prawny)</td></tr>
 <tr><td>Ustalenie, dochodzenie lub obrona roszczeń, np. przy reklamacji zabiegu</td><td>dane potrzebne do sprawy</td><td>art. 6 ust. 1 lit. f (prawnie uzasadniony interes)</td></tr>
 <tr><td>Prowadzenie profili gabinetu w mediach społecznościowych (Instagram, Facebook) i odpowiadanie na komentarze i wiadomości</td><td>nazwa profilu, treść wiadomości lub komentarza</td><td>art. 6 ust. 1 lit. f (prawnie uzasadniony interes: komunikacja z obserwującymi)</td></tr>
+<?php if (DANE['ga4'] !== ''): ?><tr><td>Statystyki odwiedzin strony, żeby ją ulepszać i wiedzieć, skąd przychodzą klientki (Google Analytics), tylko za Twoją zgodą</td><td>identyfikator z plików cookies, przybliżona lokalizacja (miasto), rodzaj urządzenia i przeglądarki, odwiedzone podstrony, źródło wejścia, kliknięcia w rezerwację, telefon, e-mail i wysłanie formularza (bez treści formularza)</td><td>art. 6 ust. 1 lit. a (zgoda); cookies: art. 399 Prawa komunikacji elektronicznej</td></tr>
+<?php endif; ?>
 </tbody></table></div>
 <p>Podanie danych jest dobrowolne, ale bez danych kontaktowych nie odpowiem na zapytanie, a bez wywiadu i zgody nie
 przeprowadzę zabiegu. Nie podejmuję decyzji wyłącznie automatycznie i nie profiluję Cię w sposób, który wywołuje wobec
@@ -62,6 +64,7 @@ gabinetu i strony:</p>
 <li>dostawcy hostingu strony i serwera poczty (LH.pl),</li>
 <li>dostawcy poczty e-mail, na którą trafiają wiadomości i zapytania z formularza (Google, usługa Gmail),</li>
 <li>serwisowi rezerwacji Booksy, przy rezerwacji wizyty,</li>
+<?php if (DANE['ga4'] !== ''): ?><li>Google Ireland Ltd. (Google Analytics), jeśli zgodzisz się na cookies analityczne,</li><?php endif; ?>
 <li>firmie, która technicznie obsługuje i rozwija stronę (Patoagencja sp. z o.o.),</li>
 <li>biuru rachunkowemu, przy rozliczeniach,</li>
 <li>organom publicznym, gdy wymaga tego prawo.</li>
@@ -70,7 +73,7 @@ gabinetu i strony:</p>
 gabinetu.</p>
 
 <h2 id="poza-eog">5. Przekazywanie danych poza Europejski Obszar Gospodarczy</h2>
-<p>Część dostawców (Google przy poczcie Gmail, Meta przy profilach w mediach społecznościowych) może przetwarzać dane także
+<p>Część dostawców (Google przy poczcie Gmail<?php if (DANE['ga4'] !== ''): ?> i Google Analytics<?php endif; ?>, Meta przy profilach w mediach społecznościowych) może przetwarzać dane także
 w Stanach Zjednoczonych. Odbywa się to na podstawie decyzji
 Komisji Europejskiej o odpowiednim stopniu ochrony (EU‑US Data Privacy Framework) albo standardowych klauzul umownych
 zatwierdzonych przez Komisję. Kopię zabezpieczeń możesz otrzymać, pisząc do gabinetu.</p>
@@ -83,6 +86,7 @@ roszczeń (zwykle 6 lat, licząc do końca roku kalendarzowego).</li>
 <li>Rachunki, faktury i dokumenty księgowe: 5 lat od końca roku, w którym powstał obowiązek podatkowy.</li>
 <li>Informacje o zdrowiu w karcie klienta: jak karta klienta, chyba że wcześniej cofniesz zgodę.</li>
 <li>Pliki cookies: przez okres podany w tabeli w punkcie 8.</li>
+<?php if (DANE['ga4'] !== ''): ?><li>Statystyki w Google Analytics: 14 miesięcy, potem Google je usuwa.</li><?php endif; ?>
 </ul>
 
 <h2 id="prawa">7. Twoje prawa</h2>
@@ -102,9 +106,13 @@ najpóźniej w ciągu miesiąca.</p>
 
 <h2 id="cookies">8. Pliki cookies</h2>
 <p>Cookies to małe pliki zapisywane w Twojej przeglądarce. Strona używa wyłącznie cookies niezbędnych, bez których nie
-działałaby poprawnie; na nie nie potrzeba zgody (art. 399 Prawa komunikacji elektronicznej). Strona nie używa dziś
+działałaby poprawnie; na nie nie potrzeba zgody (art. 399 Prawa komunikacji elektronicznej). <?php if (DANE['ga4'] !== ''): ?>Za Twoją zgodą
+(okienko przy pierwszej wizycie) strona używa też Google Analytics 4 (Google Ireland Ltd.) do anonimowych statystyk
+odwiedzin. Bez zgody Google Analytics w ogóle się nie wczytuje. Nie używam sygnałów Google do reklam ani łączenia
+danych z kontami Google; Google Analytics nie zapisuje pełnego adresu IP. Strona nie używa dziś narzędzi reklamowych
+(np. Meta Pixel); jeśli to się zmieni, zadziałają tylko po osobnej zgodzie marketingowej, a ta polityka wymieni je z nazwy.<?php else: ?>Strona nie używa dziś
 narzędzi analitycznych ani reklamowych (np. Google Analytics, Meta Pixel). Jeśli to się zmieni, takie narzędzia będą
-działać dopiero po Twojej zgodzie, wyrażonej w okienku zgód, a ta polityka wymieni je z nazwy. Zgody zmienisz w każdej
+działać dopiero po Twojej zgodzie, wyrażonej w okienku zgód, a ta polityka wymieni je z nazwy.<?php endif; ?> Zgody zmienisz w każdej
 chwili przez link <a href="#ustawienia-cookies">„Ustawienia cookies”</a> w stopce strony; cookies usuniesz też
 w ustawieniach przeglądarki.</p>
 <div class="tw"><table>
@@ -112,6 +120,10 @@ w ustawieniach przeglądarki.</p>
 <tbody>
 <tr><td>zgody</td><td>niezbędne</td><td>zapamiętuje Twój wybór w okienku zgód (tylko jeśli go dokonasz)</td><td>12 miesięcy</td></tr>
 <tr><td>widok</td><td>niezbędne</td><td>zapamiętuje, czy wyświetlać wersję strony na telefon, czy na komputer</td><td>12 miesięcy</td></tr>
+<?php if (DANE['ga4'] !== ''): ?><tr><td>_ga</td><td>analityczne (za zgodą)</td><td>Google Analytics: odróżnia kolejne wizyty tej samej przeglądarki</td><td>2 lata</td></tr>
+<tr><td>_ga_<?= htmlspecialchars(substr(DANE['ga4'], 2)) ?></td><td>analityczne (za zgodą)</td><td>Google Analytics: zapamiętuje stan bieżącej wizyty</td><td>2 lata</td></tr>
+<?php endif; ?><tr><td>ludwinek_wewn</td><td>niezbędne</td><td>oznacza urządzenie gabinetu, żeby jego wizyty nie liczyły się do statystyk (tylko po zalogowaniu do panelu)</td><td>5 lat</td></tr>
+<tr><td>ludwinek_panel</td><td>niezbędne</td><td>logowanie do panelu edycji strony (tylko gabinet)</td><td>30 dni</td></tr>
 <tr><td>ludwinek_podglad</td><td>niezbędne</td><td>logowanie do podglądu strony przed jej startem (tylko osoby z hasłem)</td><td>60 dni</td></tr>
 </tbody></table></div>
 <p>Czcionki są na serwerze gabinetu, a strona nie osadza filmów ani wtyczek społecznościowych. Wyjątkiem jest mapa

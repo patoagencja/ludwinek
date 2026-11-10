@@ -11,7 +11,8 @@ const DANE = [
     'email'      => 'ludwinekaesthetic@gmail.com',
     'telefon'    => '737 460 105',
     'domena'     => 'ludwinekaesthetic.pl',
-    'od'         => '6 listopada 2026',  // od kiedy obowiązują dokumenty
+    'ga4'        => 'G-5LJXC4VE72',                // identyfikator Google Analytics 4 (G-…); ten sam wpisz w assets/zgody.js (GA4_ID)
+    'od'         => '10 listopada 2026',  // od kiedy obowiązują dokumenty
 ];
 
 function dana(string $k): string

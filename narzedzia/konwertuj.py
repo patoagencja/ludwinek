@@ -193,7 +193,7 @@ FORM_SEND = ("""        if (this.state.kfBusy) return;
         const fd = new FormData(); Object.entries({ name: v.name, tel: v.tel, email: v.mail, zabieg: v.zab, termin: v.term, msg: v.msg, zgoda: v.ok ? '1' : '', strona: (f.elements.strona || {}).value || '', t: String(Date.now() - (window.__kfT0 || Date.now())) }).forEach(([k, x]) => fd.append(k, x));
         this.setState({ kfBusy: true, kfFail: '' });
         fetch('/formularz', { method: 'POST', body: fd, credentials: 'same-origin' }).then((r) => r.json().catch(() => ({})).then((j) => ({ r, j }))).then(({ r, j }) => {
-          if (r.ok && j.ok) { this.setState({ kfBusy: false, kfSent: v, kfErr: {}, kfTry: false }, () => { const h = document.getElementById('kf-done-h'); this.kfFocus(h); this.kfShow(document.getElementById('kf-done')); }); return; }
+          if (r.ok && j.ok) { try { window.laZdarzenie && window.laZdarzenie('generate_lead', { zabieg: v.zab || '', formularz: 'kontakt' }); } catch (x) {} this.setState({ kfBusy: false, kfSent: v, kfErr: {}, kfTry: false }, () => { const h = document.getElementById('kf-done-h'); this.kfFocus(h); this.kfShow(document.getElementById('kf-done')); }); return; }
           if (r.status === 422 && j.bledy) { this.setState({ kfBusy: false, kfErr: j.bledy, kfTry: true }); return; }
           throw new Error(String(r.status));
         }).catch((x) => this.setState({ kfBusy: false, kfFail: x && x.message === '429' ? 'Wysłano już kilka zapytań z tego urządzenia. Zadzwoń proszę: 737 460 105.' : 'Nie udało się wysłać wiadomości. Spróbuj ponownie albo zadzwoń: 737 460 105.' }));""")
@@ -202,6 +202,10 @@ def formularz(s):
     a = "        this.setState({ kfSent: v, kfErr: {}, kfTry: false }, () => { const h = document.getElementById('kf-done-h'); this.kfFocus(h); this.kfShow(document.getElementById('kf-done')); });"
     assert s.count(a) == 1
     s = s.replace(a, FORM_SEND)
+    # pomiar: błędy w formularzu (które pola) dla analityki
+    a = "          this.setState({ kfErr: err, kfTry: true }, () =>"
+    assert s.count(a) == 1
+    s = s.replace(a, "          try { window.laFormularzBlad && window.laFormularzBlad(ks.join(',')); } catch (x) {}\n" + a)
     a = 'kfOpen: !kfS, kfDone: !!kfS, kfE,'
     assert s.count(a) == 1
     s = s.replace(a, a + " kfFail: st.kfFail || '', kfBtn: st.kfBusy ? 'Wysyłam…' : 'Wyślij zapytanie', kfBusy: !!st.kfBusy,")
