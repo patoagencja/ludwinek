@@ -12,3 +12,7 @@ Strona gabinetu Ludwinek Aesthetic (Julia Ludwinek, Plac Konstytucji 1, Warszawa
   (`public/_edycje.php`), więc wgrywanie z repo ich nie nadpisuje. Każde wdrożenie robi ich kopię (artefakt „kopia-panelu”).
   Uwaga: jeśli zmienisz w `zrodlo/` tekst, który Julia już edytowała, jej zmiana przestanie działać (panel to pokaże).
 - Analityka GA4 (G-5LJXC4VE72): `docs/analityka.md` (zdarzenia, lejek, ustawienia w GA4).
+- Vouchery: zakup na /vouchery przez Stripe Checkout (`public/_vouchery.php`, `_vouchery-dane.php`), cena liczona na serwerze
+  z cennika na stronie, ważność 12 miesięcy, kod i link do wydruku mailem, lista i realizacja w `/panel/vouchery`,
+  regulamin `/regulamin-voucherow`. Klucz: sekret repo `STRIPE_KEY` (albo `STRIPE_KEY_TEST`); wdrożenie zapisuje go na
+  serwerze i zakłada webhook. Bez klucza (albo z kluczem testowym dla gości) strona podaje `_strony-wkrotce/` („Vouchery wkrótce”).

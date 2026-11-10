@@ -42,6 +42,38 @@ jobs:
           echo "Kopia panelu: $(find kopia-panelu -type f | wc -l) plików"
           ftp "cd $T; mirror -R --no-perms --parallel=4 --verbose=1 public/ ./"
 
+      - name: Stripe (klucz na serwer i webhook)
+        env:
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          STRIPE_KEY: ${{ secrets.STRIPE_KEY }}
+          STRIPE_KEY_TEST: ${{ secrets.STRIPE_KEY_TEST }}
+        run: |
+          # Klucz z sekretów repo trafia tylko na serwer (_panel-dane/_stripe.php), razem z sekretem webhooka.
+          # Webhook zakładamy przez API raz na klucz (odcisk klucza w pliku); bez klucza strona pokazuje „Vouchery wkrótce”.
+          KEY="${STRIPE_KEY:-$STRIPE_KEY_TEST}"
+          if [ -z "$KEY" ]; then echo "::notice::Brak klucza Stripe w sekretach (STRIPE_KEY): vouchery „wkrótce”"; exit 0; fi
+          TRYB=live; [ -z "$STRIPE_KEY" ] && TRYB=test
+          ODCISK=$(printf %s "$KEY" | sha256sum | cut -c1-16)
+          if grep -q "$ODCISK" kopia-panelu/_panel-dane/_stripe.php 2>/dev/null; then echo "Stripe: konfiguracja aktualna (tryb $TRYB)"; exit 0; fi
+          URL="https://$DOMENA/voucher/stripe"
+          L=$(curl -s -u "$KEY:" "https://api.stripe.com/v1/webhook_endpoints?limit=100")
+          if [ "$(echo "$L" | jq -r '.error.message // empty')" != "" ]; then echo "::error::Stripe: $(echo "$L" | jq -r .error.message)"; exit 1; fi
+          for id in $(echo "$L" | jq -r --arg u "$URL" '.data[] | select(.url==$u) | .id'); do curl -s -u "$KEY:" -X DELETE "https://api.stripe.com/v1/webhook_endpoints/$id" >/dev/null; done
+          R=$(curl -s -u "$KEY:" https://api.stripe.com/v1/webhook_endpoints -d url="$URL" -d "enabled_events[]=checkout.session.completed" \
+              -d "enabled_events[]=checkout.session.async_payment_succeeded" -d description="ludwinekaesthetic.pl: vouchery")
+          WH=$(echo "$R" | jq -r '.secret // empty')
+          if [ -z "$WH" ]; then echo "::error::Stripe: nie udało się założyć webhooka: $(echo "$R" | jq -r '.error.message // .')"; exit 1; fi
+          mkdir -p stripe
+          K="$KEY" W="$WH" T="$TRYB" O="$ODCISK" php -r 'echo "<?php\n// zapisane przez wdrożenie (sekrety repo); nie edytować ręcznie\nreturn " . var_export(["klucz" => getenv("K"), "whsec" => getenv("W"), "tryb" => getenv("T"), "odcisk" => getenv("O")], true) . ";\n";' > stripe/_stripe.php
+          printf 'Require all denied\n' > stripe/.htaccess
+          S="set ftp:ssl-allow true; set ssl:verify-certificate no; set ftp:passive-mode true; set net:max-retries 3; set net:timeout 30; set cmd:fail-exit true"
+          ftp() { lftp --env-password -u "$FTP_USER" -e "$S; $1; bye" "ftp://$FTP_HOST"; }
+          if ftp "cd $DOMENA" >/dev/null 2>&1; then KAT="$DOMENA"; else KAT="."; fi
+          ftp "cd $KAT; mkdir -p _panel-dane; cd _panel-dane; put stripe/_stripe.php -o _stripe.php; put stripe/.htaccess -o .htaccess"
+          rm -rf stripe
+          echo "::notice::Stripe skonfigurowany (tryb $TRYB), webhook: $URL"
+
       - name: Kopia zmian z panelu
         uses: actions/upload-artifact@v4
         with:
@@ -69,6 +101,9 @@ jobs:
           c=$(curl -s $R --max-time 30 -o body.txt -w '%{http_code}' -X POST -d name=x -d t=5000 "https://$DOMENA/formularz" || echo 000); echo "/formularz (błędne dane, bez wysyłki) → $c"; [ "$c" = 422 ] && grep -q bledy body.txt || { echo "::error::formularz nie odpowiada poprawnie (HTTP $c)"; ok=0; }
           c=$(get "https://$DOMENA/panel"); echo "/panel → $c"; [ "$c" = 200 ] && grep -q 'Panel' body.txt || { echo "::error::panel nie działa (HTTP $c)"; ok=0; }
           c=$(get "https://$DOMENA/_panel-dane/_edycje.json"); echo "/_panel-dane bez logowania → $c"; [ "$c" = 403 ] || [ "$c" = 404 ] || { echo "::error::dane panelu dostępne publicznie (HTTP $c)"; ok=0; }
+          c=$(get "https://$DOMENA/regulamin-voucherow"); echo "/regulamin-voucherow → $c"; [ "$c" = 200 ] || { echo "::error::regulamin voucherów nie działa (HTTP $c)"; ok=0; }
+          c=$(curl -s $R --max-time 30 -o body.txt -w '%{http_code}' -X POST -d email=x "https://$DOMENA/voucher/zamow" || echo 000); echo "/voucher/zamow (błędne dane) → $c"; [ "$c" = 422 ] || [ "$c" = 503 ] || { echo "::error::zamówienie vouchera nie odpowiada poprawnie (HTTP $c)"; ok=0; }
+          c=$(get "https://$DOMENA/_panel-dane/_stripe.php"); echo "/_panel-dane/_stripe.php → $c"; [ "$c" = 403 ] || [ "$c" = 404 ] || { echo "::error::konfiguracja Stripe dostępna publicznie (HTTP $c)"; ok=0; }
           c=$(get "https://$DOMENA/_strony/Home-Desktop.html"); echo "/_strony bez hasła → $c"; [ "$c" = 403 ] || { echo "::error::pliki stron dostępne bezpośrednio (HTTP $c)"; ok=0; }
           c=$(get "https://$DOMENA/assets/fonts.css"); echo "/assets/fonts.css → $c"; [ "$c" = 200 ] || { echo "::error::czcionki nie działają (HTTP $c)"; ok=0; }
           c=$(curl -s $R --max-time 30 -o /dev/null -w '%{http_code}' "https://$DOMENA/" || echo 000)

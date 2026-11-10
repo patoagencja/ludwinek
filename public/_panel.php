@@ -131,6 +131,14 @@ if ($akcja === '') {
     exit;
 }
 
+if ($akcja === 'vouchery') {
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-store');
+    header('X-Frame-Options: DENY');
+    require __DIR__ . '/_panel-vouchery.php';
+    exit;
+}
+
 // API panelu: tylko POST z nagłówkiem X-Panel (inne strony nie mogą go wysłać bez zgody serwera)
 if ($metoda !== 'POST' || ($_SERVER['HTTP_X_PANEL'] ?? '') !== '1') panel_json(400, ['ok' => false, 'blad' => 'Złe zapytanie.']);
 $edycje = edycje_wczytaj();
@@ -151,6 +159,24 @@ if ($akcja === 'lista') {
         $lista[] = $e + ['dziala' => $dziala, 'adres' => $e['strona'] === '*' ? '' : '/' . ($nazwy[$e['strona']] ?? '')];
     }
     panel_json(200, ['ok' => true, 'zmiany' => $lista]);
+}
+
+if ($akcja === 'voucher-status') {
+    require_once __DIR__ . '/_vouchery-dane.php';
+    $kod = (string)($_POST['kod'] ?? '');
+    $status = (string)($_POST['status'] ?? '');
+    $notatka = mb_substr(trim((string)($_POST['notatka'] ?? '')), 0, 500);
+    if (!in_array($status, ['aktywny', 'wykorzystany', 'zwrocony'], true)) panel_json(400, ['ok' => false, 'blad' => 'Zły status.']);
+    $ok = false;
+    vouchery(function (array &$lista) use ($kod, $status, $notatka, &$ok) {
+        foreach ($lista as &$v) {
+            if ($v['kod'] !== $kod) continue;
+            $v['status'] = $status; $v['notatka'] = $notatka; $v['zmieniono'] = date('c'); $ok = true;
+        }
+        return null;
+    });
+    if (!$ok) panel_json(404, ['ok' => false, 'blad' => 'Nie ma takiego vouchera.']);
+    panel_json(200, ['ok' => true]);
 }
 
 if ($akcja === 'cofnij') {

@@ -37,6 +37,7 @@ społecznościowych) oraz obsługi wizyt w gabinecie.</p>
 <tbody>
 <tr><td>Odpowiedź na zapytanie z formularza „Zapytaj o termin”, e-mail, telefon lub wiadomość</td><td>imię i nazwisko, telefon, e-mail (jeśli podasz), wybrany zabieg, preferowany termin, treść wiadomości</td><td>art. 6 ust. 1 lit. b (działania na Twoje żądanie przed umówieniem wizyty) i lit. f (prawnie uzasadniony interes: odpowiadanie na pytania)</td></tr>
 <tr><td>Umówienie i przeprowadzenie wizyty lub zabiegu, konsultacja, kwalifikacja do zabiegu, kontakt w sprawie wizyty</td><td>dane kontaktowe, termin wizyty, historia zabiegów, wywiad i zgoda na zabieg (karta klienta)</td><td>art. 6 ust. 1 lit. b (umowa o usługę); dla informacji o zdrowiu art. 9 ust. 2 lit. a (Twoja wyraźna zgoda)</td></tr>
+<tr><td>Sprzedaż voucherów online: zamówienie, płatność, wysłanie vouchera e-mailem, realizacja vouchera w gabinecie, zwroty i reklamacje</td><td>adres e-mail, imię i nazwisko (jeśli podasz je przy płatności), wybrany voucher, kwota, kod vouchera, status płatności i realizacji (bez danych karty)</td><td>art. 6 ust. 1 lit. b (umowa sprzedaży vouchera)</td></tr>
 <tr><td>Rozliczenia, rachunki i faktury, obowiązki podatkowe i księgowe</td><td>dane do rachunku lub faktury, kwoty</td><td>art. 6 ust. 1 lit. c (obowiązek prawny)</td></tr>
 <tr><td>Ustalenie, dochodzenie lub obrona roszczeń, np. przy reklamacji zabiegu</td><td>dane potrzebne do sprawy</td><td>art. 6 ust. 1 lit. f (prawnie uzasadniony interes)</td></tr>
 <tr><td>Prowadzenie profili gabinetu w mediach społecznościowych (Instagram, Facebook) i odpowiadanie na komentarze i wiadomości</td><td>nazwa profilu, treść wiadomości lub komentarza</td><td>art. 6 ust. 1 lit. f (prawnie uzasadniony interes: komunikacja z obserwującymi)</td></tr>
@@ -64,6 +65,7 @@ gabinetu i strony:</p>
 <li>dostawcy hostingu strony i serwera poczty (LH.pl),</li>
 <li>dostawcy poczty e-mail, na którą trafiają wiadomości i zapytania z formularza (Google, usługa Gmail),</li>
 <li>serwisowi rezerwacji Booksy, przy rezerwacji wizyty,</li>
+<li>operatorowi płatności Stripe Payments Europe Ltd. (Dublin, Irlandia), przy zakupie vouchera online; Stripe przetwarza dane płatności jako osobny administrator, na zasadach swojej polityki prywatności,</li>
 <?php if (DANE['ga4'] !== ''): ?><li>Google Ireland Ltd. (Google Analytics), jeśli zgodzisz się na cookies analityczne,</li><?php endif; ?>
 <li>firmie, która technicznie obsługuje i rozwija stronę (Patoagencja sp. z o.o.),</li>
 <li>biuru rachunkowemu, przy rozliczeniach,</li>
@@ -73,7 +75,7 @@ gabinetu i strony:</p>
 gabinetu.</p>
 
 <h2 id="poza-eog">5. Przekazywanie danych poza Europejski Obszar Gospodarczy</h2>
-<p>Część dostawców (Google przy poczcie Gmail<?php if (DANE['ga4'] !== ''): ?> i Google Analytics<?php endif; ?>, Meta przy profilach w mediach społecznościowych) może przetwarzać dane także
+<p>Część dostawców (Google przy poczcie Gmail<?php if (DANE['ga4'] !== ''): ?> i Google Analytics<?php endif; ?>, Meta przy profilach w mediach społecznościowych, Stripe przy płatnościach) może przetwarzać dane także
 w Stanach Zjednoczonych. Odbywa się to na podstawie decyzji
 Komisji Europejskiej o odpowiednim stopniu ochrony (EU‑US Data Privacy Framework) albo standardowych klauzul umownych
 zatwierdzonych przez Komisję. Kopię zabezpieczeń możesz otrzymać, pisząc do gabinetu.</p>
@@ -83,6 +85,7 @@ zatwierdzonych przez Komisję. Kopię zabezpieczeń możesz otrzymać, pisząc d
 <li>Zapytania z formularza, e-maile i wiadomości: przez czas rozmowy, a potem do 12 miesięcy, chyba że umówisz wizytę.</li>
 <li>Karta klienta i historia zabiegów: przez czas korzystania z usług gabinetu, a potem do upływu terminu przedawnienia
 roszczeń (zwykle 6 lat, licząc do końca roku kalendarzowego).</li>
+<li>Dane zakupu vouchera: przez czas ważności vouchera i jego realizacji, a potem do upływu terminu przedawnienia roszczeń i obowiązków księgowych (do 5 lat od końca roku zakupu).</li>
 <li>Rachunki, faktury i dokumenty księgowe: 5 lat od końca roku, w którym powstał obowiązek podatkowy.</li>
 <li>Informacje o zdrowiu w karcie klienta: jak karta klienta, chyba że wcześniej cofniesz zgodę.</li>
 <li>Pliki cookies: przez okres podany w tabeli w punkcie 8.</li>
@@ -132,8 +135,7 @@ adres IP i może zapisać swoje pliki cookies, zgodnie z polityką prywatności 
 Facebooka prowadzą do tych serwisów; po ich otwarciu obowiązują ich zasady prywatności.</p>
 
 <h2 id="zmiany">9. Zmiany polityki</h2>
-<p>Politykę zmieniam, gdy zmieniają się przepisy albo sposób działania gabinetu lub strony, np. przy uruchomieniu
-sprzedaży voucherów online. Aktualna wersja jest zawsze pod tym adresem, z datą, od której obowiązuje.</p>
+<p>Politykę zmieniam, gdy zmieniają się przepisy albo sposób działania gabinetu lub strony. Aktualna wersja jest zawsze pod tym adresem, z datą, od której obowiązuje.</p>
 <?php
 $tresc = ob_get_clean();
 require __DIR__ . '/_dokument.php';

@@ -57,6 +57,6 @@ th{font-weight:500;color:var(--ink)}
 <main>
 <?= $tresc ?>
 </main>
-<footer class="ft">© <?= date('Y') ?> Ludwinek Aesthetic · <a href="/polityka-prywatnosci">Polityka prywatności</a> · <a href="/regulamin">Regulamin</a> · <a href="#ustawienia-cookies">Ustawienia cookies</a></footer>
+<footer class="ft">© <?= date('Y') ?> Ludwinek Aesthetic · <a href="/polityka-prywatnosci">Polityka prywatności</a> · <a href="/regulamin">Regulamin</a> · <a href="/regulamin-voucherow">Regulamin voucherów</a> · <a href="#ustawienia-cookies">Ustawienia cookies</a></footer>
 </body>
 </html>

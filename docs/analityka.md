@@ -12,7 +12,7 @@ Tag Google wczytuje się dopiero po zgodzie na cookies analityczne (baner na str
 | 2. Zainteresowanie zabiegiem | `view_item` (strona zabiegu), `view_item_list` (Zabiegi, Cennik, Vouchery), `select_item` (klik w zabieg) |
 | 3. Zaangażowanie | `sekcja_widoczna` (Cena, Opinie, Efekty, FAQ…), `faq_otwarcie`, `wybor_opcji`, `porownanie_przed_po`, `scroll_glebokosc`, `zaangazowanie` (30 s, 90 s, 3 min) |
 | 4. Zamiar kontaktu | `formularz_start`, `cta_formularz`, `klik_voucher` |
-| 5. **Konwersja** | `klik_booksy`, `klik_telefon`, `generate_lead` (wysłany formularz); później `begin_checkout` i `purchase` (vouchery przez Stripe) |
+| 5. **Konwersja** | `klik_booksy`, `klik_telefon`, `generate_lead` (wysłany formularz), `begin_checkout` → `purchase` (vouchery przez Stripe, z kwotą) |
 
 ## Wszystkie zdarzenia
 
@@ -22,7 +22,9 @@ Tag Google wczytuje się dopiero po zgodzie na cookies analityczne (baner na str
 | `klik_booksy` | klik w „Umów wizytę” (Booksy) | `zabieg`, `sekcja`, `link_text`, `strona` |
 | `klik_telefon` / `klik_email` / `klik_whatsapp` | klik w numer, e-mail, WhatsApp | jw. |
 | `klik_mapa` / `klik_social` | mapa Google, Instagram/Facebook | jw. |
-| `klik_voucher` | przycisk voucherów | jw. |
+| `klik_voucher` | przycisk voucherów (gdy sprzedaż jest wyłączona) | jw. |
+| `begin_checkout` | „Kupuję i płacę”: przejście do płatności Stripe | `value`, `currency`, `items[]` |
+| `purchase` | voucher opłacony (strona z kodem po płatności) | `transaction_id`, `value`, `currency`, `items[]` |
 | `view_item` | wejście na stronę zabiegu | `items[]` (item_id, item_name, item_category) |
 | `view_item_list` | Zabiegi, Cennik, Vouchery | `item_list_id`, `item_list_name` |
 | `select_item` | klik w kafelek/link zabiegu | `item_list_name` (skąd), `items[]` |
@@ -49,7 +51,8 @@ Wizyty z urządzeń, na których ktoś zalogował się do `/panel`, mają `traff
 2. **Zbieranie danych → Sygnały Google**: wyłączone (polityka mówi, że ich nie używamy).
 3. **Strumienie danych → strumień → Pomiar zaawansowany → koło zębate**: wyłącz *Przewinięcia* (mamy dokładniejsze `scroll_glebokosc`), *Interakcje z formularzami* (formularz wysyła się skryptem, mamy `formularz_start` i `generate_lead`) i *Wyszukiwanie w witrynie* (strona nie ma wyszukiwarki). Reszta włączona.
 4. **Filtry danych**: filtr „Internal Traffic” (Ruch wewnętrzny) przełącz z *Testowanie* na *Aktywny*.
-5. **Kluczowe zdarzenia** (Wyświetlanie danych → Zdarzenia, gdy zdarzenia się pojawią, albo „Nowe kluczowe zdarzenie” z nazwą): `generate_lead`, `klik_booksy`, `klik_telefon`. Po starcie voucherów: `purchase`.
+5. **Kluczowe zdarzenia** (Wyświetlanie danych → Zdarzenia, gdy zdarzenia się pojawią, albo „Nowe kluczowe zdarzenie” z nazwą): `generate_lead`, `klik_booksy`, `klik_telefon`, `purchase`.
+8. **Strumienie danych → strumień → Skonfiguruj ustawienia tagów → Pokaż wszystkie → Lista niechcianych odesłań**: dodaj `checkout.stripe.com` (warunek: domena odsyłająca zawiera). Inaczej powrót z płatności liczy się jako wejście „ze Stripe” i gubi prawdziwe źródło zakupu.
 6. **Niestandardowe definicje → Wymiary niestandardowe** (zakres: Zdarzenie; nazwa wymiaru = nazwa parametru):
    `zabieg`, `sekcja`, `opcja`, `pytanie`, `problem`, `przypadek`, `pola`, `formularz`, `link_text`, `miejsce`, `cel`, `typ`, `menu`.
    **Dane niestandardowe** (zakres: Zdarzenie, jednostka: standardowa): `procent`, `sekundy`.

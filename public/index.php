@@ -32,7 +32,14 @@ function wyslij_strone(string $klucz, bool $prywatna): void
         $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
         $widok = preg_match('/iPhone|iPod|Android.+Mobile|Mobile.+Firefox|Windows Phone|Opera Mini|BlackBerry|webOS/i', $ua) ? 'm' : 'd';
     }
-    $plik = __DIR__ . '/_strony/' . $klucz . '-' . ($widok === 'm' ? 'Mobile' : 'Desktop') . '.html';
+    // sprzedaż voucherów: wersja z zakupem, gdy na serwerze jest klucz Stripe (klucz testowy: tylko dla urządzeń gabinetu)
+    $kat = '_strony-wkrotce';
+    $stripe = __DIR__ . '/_panel-dane/_stripe.php';
+    if (is_file($stripe)) {
+        $k = require $stripe;
+        if (is_array($k) && !empty($k['klucz']) && (($k['tryb'] ?? '') === 'live' || ($_COOKIE['ludwinek_wewn'] ?? '') === '1')) $kat = '_strony';
+    }
+    $plik = __DIR__ . '/' . $kat . '/' . $klucz . '-' . ($widok === 'm' ? 'Mobile' : 'Desktop') . '.html';
     $html = edycje_zastosuj((string)file_get_contents($plik), $klucz);
     header('Content-Type: text/html; charset=utf-8');
     header('Vary: User-Agent, Cookie');
@@ -80,13 +87,19 @@ if (isset($_GET['panel'])) {
     require_once __DIR__ . '/_panel-auth.php';
 }
 
+// sprzedaż voucherów (Stripe): zamówienie, webhook, podziękowanie, voucher do wydruku
+if ($path === 'voucher' || strpos($path, 'voucher/') === 0) {
+    require __DIR__ . '/_vouchery.php';
+    exit;
+}
+
 if ($path === 'formularz') {
     require __DIR__ . '/_formularz.php';
     exit;
 }
 
 // dokumenty prawne są publiczne także przed startem (strona „Wkrótce” do nich linkuje)
-const DOKUMENTY = ['polityka-prywatnosci' => '_polityka-prywatnosci.php', 'regulamin' => '_regulamin.php'];
+const DOKUMENTY = ['polityka-prywatnosci' => '_polityka-prywatnosci.php', 'regulamin' => '_regulamin.php', 'regulamin-voucherow' => '_regulamin-voucherow.php'];
 if (isset(DOKUMENTY[$path])) {
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: public, max-age=300');

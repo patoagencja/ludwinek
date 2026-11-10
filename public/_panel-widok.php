@@ -130,6 +130,7 @@ h1,h2{font-family:'Cormorant Garamond',Garamond,serif;font-weight:300;color:var(
 <header class="top">
 <b>Panel strony</b><span class="hide-m" style="font-size:13px;opacity:.7">Ludwinek Aesthetic</span>
 <span class="sp"></span>
+<a href="/panel/vouchery">Vouchery</a>
 <a id="otworz" href="/" target="_blank" rel="noopener">Zobacz stronę ↗</a>
 <a href="/panel/wyloguj">Wyloguj</a>
 </header>

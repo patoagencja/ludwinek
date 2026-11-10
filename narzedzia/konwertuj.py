@@ -133,20 +133,58 @@ VSOON_CSS = """
 .vsoon .btn{align-self:flex-start;margin-top:4px}
 """
 
+# Sprzedaż voucherów przez Stripe (public/_vouchery.php). Konwerter robi dwie wersje stron: z zakupem (_strony/)
+# i z „Vouchery wkrótce” (_strony-wkrotce/). index.php podaje tę drugą, dopóki na serwerze nie ma klucza Stripe.
+SPRZEDAZ_VOUCHEROW = True
+VOUCHER_WAZNOSC = '12 miesięcy'
+
+VP_GO = """        if (this.state.vpBusy) return;
+        const fd = new FormData();
+        [['email', v.mail], ['zgoda', v.ok ? '1' : ''], ['typ', st.vt === 0 ? 'zabieg' : 'kwota'], ['zabieg', vT.slug || ''], ['g', String(st.vzg || 0)], ['r', String(st.vzr || 0)], ['va', String(st.va)]].forEach(([k, x]) => fd.append(k, x));
+        this.setState({ vpBusy: true, vpOk: null, vpErr: {} });
+        fetch('/voucher/zamow', { method: 'POST', body: fd, credentials: 'same-origin' }).then((r) => r.json().catch(() => ({}))).then((j) => {
+          if (j.ok && j.url) {
+            try { window.laZdarzenie && window.laZdarzenie('begin_checkout', { currency: 'PLN', value: j.kwota, items: [{ item_id: j.zabieg || 'voucher-kwotowy', item_name: j.nazwa, item_category: 'Voucher', price: j.kwota, quantity: 1 }] }); } catch (x) {}
+            setTimeout(() => { location.href = j.url; }, 200); return;
+          }
+          if (j.bledy) { const k0 = Object.keys(j.bledy)[0]; this.setState({ vpBusy: false, vpErr: j.bledy, vpTry: true }, () => { const el = document.getElementById(k0 === 'mail' ? 'vmail' : 'vok'); this.vpFocus(el); }); return; }
+          this.setState({ vpBusy: false, vpOk: j.blad || 'Nie udało się otworzyć płatności. Spróbuj ponownie albo zadzwoń: 737 460 105.' }, () => this.vpShow(document.getElementById('vpay')));
+        }).catch(() => this.setState({ vpBusy: false, vpOk: 'Brak połączenia z internetem. Spróbuj ponownie.' }));"""
+
 def vouchers(s, key):
-    # przyciski „Kup voucher” → „Vouchery wkrótce” (wyszarzone; prowadzą do oferty, gdzie widać, że sprzedaż rusza wkrótce)
-    s = re.sub(r'(<a class="btn[^"]*)("[^>]*href="/vouchery[^"]*"[^>]*>)Kup voucher(?: online)?</a>', r'\1 vsoon-btn\2Vouchery wkrótce</a>', s)
-    # Klarna i raty: teksty w danych (pudełka z ratami chowa CSS)
-    for a, b in [(', także w 3 ratach 0% z Klarna.', '.'), ('Płatność BLIK, kartą lub w 3 ratach 0% z Klarna.', 'Sprzedaż online wkrótce.'),
-                 ('Vouchery online: BLIK, karta, przelew, Klarna (3 raty 0%)', 'Vouchery online: wkrótce'),
-                 (' Także w 3 ratach 0% z Klarna.', ''), ('voucher kupisz online w kilka minut', 'voucher kupisz online już wkrótce')]:
+    # Klarna i raty: bez Klarny (teksty w danych; pudełka z ratami chowa CSS)
+    if SPRZEDAZ_VOUCHEROW:
+        zam = [(', także w 3 ratach 0% z Klarna.', '.'), ('Płatność BLIK, kartą lub w 3 ratach 0% z Klarna.', 'Płatność BLIK, Przelewy24 lub kartą.'),
+               ('Vouchery online: BLIK, karta, przelew, Klarna (3 raty 0%)', 'Vouchery online: BLIK, Przelewy24, karta'),
+               (' Także w 3 ratach 0% z Klarna.', '')]
+    else:
+        # przyciski „Kup voucher” → „Vouchery wkrótce” (wyszarzone; prowadzą do oferty, gdzie widać, że sprzedaż rusza wkrótce)
+        s = re.sub(r'(<a class="btn[^"]*)("[^>]*href="/vouchery[^"]*"[^>]*>)Kup voucher(?: online)?</a>', r'\1 vsoon-btn\2Vouchery wkrótce</a>', s)
+        zam = [(', także w 3 ratach 0% z Klarna.', '.'), ('Płatność BLIK, kartą lub w 3 ratach 0% z Klarna.', 'Sprzedaż online wkrótce.'),
+               ('Vouchery online: BLIK, karta, przelew, Klarna (3 raty 0%)', 'Vouchery online: wkrótce'),
+               (' Także w 3 ratach 0% z Klarna.', ''), ('voucher kupisz online w kilka minut', 'voucher kupisz online już wkrótce')]
+    for a, b in zam:
         s = s.replace(a, b)
     s = re.sub(r', \["Czy mogę zapłacić w ratach\? Tak, vouchery w 3 ratach 0% z Klarna"\]', '', s)
     s = re.sub(r'"Czy mogę zapłacić w ratach\? Tak, vouchery w 3 ratach 0% z Klarna",\s*', '', s)
     s = re.sub(r',\s*\["Jak działa płatność Klarna\?", "[^"]*", "klarna"\]', '', s)
-    s = s.replace('[6] miesięcy', '6 miesięcy')
+    s = s.replace('[6] miesięcy', VOUCHER_WAZNOSC)
     s = s.replace(', "Gdzie zaparkować? [informacja o parkingu / dojeździe]"', '')  # wróci z prawdziwą informacją o dojeździe
-    if key == 'Voucher':
+    if key == 'Voucher' and SPRZEDAZ_VOUCHEROW:
+        for a, b in [
+            ('href="/informacje#zasady-rezerwacji">regulamin voucherów</a>', 'href="/regulamin-voucherow" target="_blank">regulamin voucherów</a>'),
+            ('<button type="button" class="btn vgo" onClick="{{ vpGo }}">Przejdź do płatności</button>', '<button type="button" class="btn vgo" onClick="{{ vpGo }}">{{ vpBtn }}</button>'),
+            ("vpOpen: !!st.vpOk, vpMail: st.vpOk || '',", "vpOpen: !!st.vpOk, vpMail: st.vpOk || '', vpBtn: st.vpBusy ? 'Otwieram płatność…' : 'Kupuję i płacę',"),
+            ("        this.setState({ vpErr: {}, vpTry: false, vpOk: v.mail }, () => { this.vpShow(document.getElementById('vpay')); this.vpFocus(document.getElementById('vpay-h')); });", VP_GO),
+            ('<p class="sm" style="margin: 14px 0 0">BLIK · karta · przelew · Klarna</p>',
+             '<p class="sm" style="margin: 14px 0 0">BLIK · Przelewy24 · karta. Płatność obsługuje Stripe. Voucher z kodem przyjdzie e-mailem zaraz po płatności. Masz 14 dni na odstąpienie od umowy.</p>'),
+        ]:
+            assert s.count(a) == 1, ('voucher', a[:60])
+            s = s.replace(a, b)
+        s, n = re.subn(r'<sc-if value="\{\{ vpOpen \}\}".*?</div></sc-if>',
+                       '<sc-if value="{{ vpOpen }}" hint-placeholder-val="{{ false }}"><div class="vpay" id="vpay" role="alert"><p class="ferr" style="margin: 0">{{ vpMail }}</p></div></sc-if>', s, count=1, flags=re.S)
+        assert n == 1, 'blok vpay'
+    elif key == 'Voucher':
         s = s.replace('<span>Do zapłaty</span>', '<span>Cena online</span>')
         s, n = re.subn(r'<div class="\{\{ vpC\.mail \}\}".*?BLIK · karta · przelew · Klarna</p>',
             '<div class="vsoon"><p class="lbl">Sprzedaż online</p><p class="h3">Vouchery kupisz tu <em>już wkrótce.</em></p>'
@@ -240,15 +278,20 @@ def convert(name, imgs):
     return s
 
 def main():
-    os.makedirs(OUT, exist_ok=True); os.makedirs(IMG, exist_ok=True)
+    global SPRZEDAZ_VOUCHEROW
+    os.makedirs(IMG, exist_ok=True)
     jp = os.path.join(R, 'zrodlo', 'imgs.json')
     imgs = json.load(open(jp)) if os.path.exists(jp) else {}
-    n = 0
-    for f in sorted(os.listdir(SRC)):
-        if not f.endswith('.html') or f.startswith('Maile'): continue
-        name = f[:-5]
-        open(os.path.join(OUT, f), 'w', encoding='utf-8').write(convert(name, imgs)); n += 1
-    print('stron:', n, 'zdjęć:', len(os.listdir(IMG)))
+    for sprzedaz, out in [(True, OUT), (False, OUT + '-wkrotce')]:
+        SPRZEDAZ_VOUCHEROW = sprzedaz
+        os.makedirs(out, exist_ok=True)
+        open(os.path.join(out, '.htaccess'), 'w').write('Require all denied\n')
+        n = 0
+        for f in sorted(os.listdir(SRC)):
+            if not f.endswith('.html') or f.startswith('Maile'): continue
+            open(os.path.join(out, f), 'w', encoding='utf-8').write(convert(f[:-5], imgs)); n += 1
+        print(os.path.basename(out) + ':', n, 'stron')
+    print('zdjęć:', len(os.listdir(IMG)))
 
 if __name__ == '__main__':
     main()
