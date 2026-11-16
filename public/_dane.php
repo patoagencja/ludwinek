@@ -12,7 +12,9 @@ const DANE = [
     'telefon'    => '737 460 105',
     'domena'     => 'ludwinekaesthetic.pl',
     'ga4'        => 'G-5LJXC4VE72',                // identyfikator Google Analytics 4 (G-…); ten sam wpisz w assets/zgody.js (GA4_ID)
-    'od'         => '10 listopada 2026',  // od kiedy obowiązują dokumenty
+    'meta_pixel' => '1007489489076693',    // Meta Pixel; ten sam w assets/zgody.js (META_PIXEL_ID)
+    'gtm'        => 'GTM-KF8CWCDB',        // Google Tag Manager; ten sam w assets/zgody.js (GTM_ID)
+    'od'         => '16 listopada 2026',  // od kiedy obowiązują dokumenty
 ];
 
 function dana(string $k): string

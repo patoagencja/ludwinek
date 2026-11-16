@@ -75,3 +75,19 @@ a na Instagramie (link w bio)
 Bez tego ruch z wizytówki i Instagrama miesza się z „direct”.
 
 Uwaga: Booksy to osobny serwis, więc samej rezerwacji GA nie widzi. Konwersją jest przejście do Booksy (`klik_booksy`).
+
+## Google Tag Manager (GTM-KF8CWCDB) i Meta Pixel (1007489489076693)
+
+Oba są w kodzie strony (`public/assets/zgody.js`) i wczytują się tylko po zgodzie:
+GTM po dowolnej zgodzie (z Google Consent Mode: `ad_storage`/`ad_user_data`/`ad_personalization` = granted tylko przy zgodzie marketingowej),
+Meta Pixel tylko po zgodzie marketingowej.
+
+**Ważne, żeby nie dublować danych:** w kontenerze GTM **nie dodawaj** tagu Google Analytics dla `G-5LJXC4VE72` ani tagu Meta Pixel `1007489489076693`.
+Oba działają już z kodu strony. GTM jest na kolejne narzędzia (np. Google Ads, TikTok).
+Tagi reklamowe w GTM ustaw z wymaganą zgodą `ad_storage` (Ustawienia zgody tagu), wtedy uruchomią się tylko przy zgodzie marketingowej.
+
+Zdarzenia dla GTM w dataLayer mają przedrostek `la_` (np. `la_generate_lead`, `la_klik_booksy`, `la_purchase` z obiektem `ecommerce` w formacie GA4);
+wyzwalacz w GTM: „Zdarzenie niestandardowe” o tej nazwie. Zmiana zgód: zdarzenie `zgody` (`zgoda_analityczna`, `zgoda_marketingowa`).
+
+Meta Pixel wysyła: PageView, ViewContent (strona zabiegu), Schedule (klik w Booksy), Contact (telefon, e-mail), Lead (formularz),
+InitiateCheckout i Purchase z kwotą (vouchery).

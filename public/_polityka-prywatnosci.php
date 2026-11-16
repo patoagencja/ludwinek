@@ -43,6 +43,8 @@ społecznościowych) oraz obsługi wizyt w gabinecie.</p>
 <tr><td>Prowadzenie profili gabinetu w mediach społecznościowych (Instagram, Facebook) i odpowiadanie na komentarze i wiadomości</td><td>nazwa profilu, treść wiadomości lub komentarza</td><td>art. 6 ust. 1 lit. f (prawnie uzasadniony interes: komunikacja z obserwującymi)</td></tr>
 <?php if (DANE['ga4'] !== ''): ?><tr><td>Statystyki odwiedzin strony, żeby ją ulepszać i wiedzieć, skąd przychodzą klientki (Google Analytics), tylko za Twoją zgodą</td><td>identyfikator z plików cookies, przybliżona lokalizacja (miasto), rodzaj urządzenia i przeglądarki, odwiedzone podstrony, źródło wejścia, kliknięcia w rezerwację, telefon, e-mail i wysłanie formularza (bez treści formularza)</td><td>art. 6 ust. 1 lit. a (zgoda); cookies: art. 399 Prawa komunikacji elektronicznej</td></tr>
 <?php endif; ?>
+<?php if (DANE['meta_pixel'] !== ''): ?><tr><td>Pomiar skuteczności reklam gabinetu na Facebooku i Instagramie i pokazywanie reklam osobom, które odwiedziły stronę (Meta Pixel), tylko za Twoją zgodą marketingową</td><td>identyfikator z plików cookies, adres IP, informacje o przeglądarce, odwiedzone podstrony i zdarzenia na stronie (np. kliknięcie w rezerwację, wysłanie formularza bez jego treści, zakup vouchera i jego kwota)</td><td>art. 6 ust. 1 lit. a (zgoda); cookies: art. 399 Prawa komunikacji elektronicznej</td></tr>
+<?php endif; ?>
 </tbody></table></div>
 <p>Podanie danych jest dobrowolne, ale bez danych kontaktowych nie odpowiem na zapytanie, a bez wywiadu i zgody nie
 przeprowadzę zabiegu. Nie podejmuję decyzji wyłącznie automatycznie i nie profiluję Cię w sposób, który wywołuje wobec
@@ -67,6 +69,8 @@ gabinetu i strony:</p>
 <li>serwisowi rezerwacji Booksy, przy rezerwacji wizyty,</li>
 <li>operatorowi płatności Stripe Payments Europe Ltd. (Dublin, Irlandia), przy zakupie vouchera online; Stripe przetwarza dane płatności jako osobny administrator, na zasadach swojej polityki prywatności,</li>
 <?php if (DANE['ga4'] !== ''): ?><li>Google Ireland Ltd. (Google Analytics), jeśli zgodzisz się na cookies analityczne,</li><?php endif; ?>
+<?php if (DANE['gtm'] !== ''): ?><li>Google Ireland Ltd. (Google Tag Manager, narzędzie wczytujące skrypty analityczne i reklamowe), po Twojej zgodzie,</li><?php endif; ?>
+<?php if (DANE['meta_pixel'] !== ''): ?><li>Meta Platforms Ireland Ltd. (Meta Pixel), jeśli zgodzisz się na cookies marketingowe; w zakresie zbierania danych na stronie i przekazania ich Meta gabinet i Meta są współadministratorami, a dalej Meta przetwarza dane jako osobny administrator, na zasadach swojej polityki prywatności,</li><?php endif; ?>
 <li>firmie, która technicznie obsługuje i rozwija stronę (Patoagencja sp. z o.o.),</li>
 <li>biuru rachunkowemu, przy rozliczeniach,</li>
 <li>organom publicznym, gdy wymaga tego prawo.</li>
@@ -90,6 +94,7 @@ roszczeń (zwykle 6 lat, licząc do końca roku kalendarzowego).</li>
 <li>Informacje o zdrowiu w karcie klienta: jak karta klienta, chyba że wcześniej cofniesz zgodę.</li>
 <li>Pliki cookies: przez okres podany w tabeli w punkcie 8.</li>
 <?php if (DANE['ga4'] !== ''): ?><li>Statystyki w Google Analytics: 14 miesięcy, potem Google je usuwa.</li><?php endif; ?>
+<?php if (DANE['meta_pixel'] !== ''): ?><li>Dane z Meta Pixel: przez okres ustalony przez Meta (zwykle do 2 lat), a pliki cookies Meta: jak w tabeli w punkcie 8.</li><?php endif; ?>
 </ul>
 
 <h2 id="prawa">7. Twoje prawa</h2>
@@ -112,8 +117,11 @@ najpóźniej w ciągu miesiąca.</p>
 działałaby poprawnie; na nie nie potrzeba zgody (art. 399 Prawa komunikacji elektronicznej). <?php if (DANE['ga4'] !== ''): ?>Za Twoją zgodą
 (okienko przy pierwszej wizycie) strona używa też Google Analytics 4 (Google Ireland Ltd.) do anonimowych statystyk
 odwiedzin. Bez zgody Google Analytics w ogóle się nie wczytuje. Nie używam sygnałów Google do reklam ani łączenia
-danych z kontami Google; Google Analytics nie zapisuje pełnego adresu IP. Strona nie używa dziś narzędzi reklamowych
-(np. Meta Pixel); jeśli to się zmieni, zadziałają tylko po osobnej zgodzie marketingowej, a ta polityka wymieni je z nazwy.<?php else: ?>Strona nie używa dziś
+danych z kontami Google; Google Analytics nie zapisuje pełnego adresu IP. <?php if (DANE['gtm'] !== ''): ?>Skrypty wczytuje Google Tag Manager (Google Ireland Ltd.),
+który sam nie zapisuje plików cookies i też wczytuje się dopiero po zgodzie. <?php endif; ?>
+<?php if (DANE['meta_pixel'] !== ''): ?>Za osobną zgodą marketingową strona używa Meta Pixel (Meta Platforms Ireland Ltd.), żeby mierzyć skuteczność reklam gabinetu na
+Facebooku i Instagramie i pokazywać je osobom, które odwiedziły stronę. Bez tej zgody Meta Pixel się nie wczytuje.<?php else: ?>Strona nie używa dziś narzędzi reklamowych
+(np. Meta Pixel); jeśli to się zmieni, zadziałają tylko po osobnej zgodzie marketingowej, a ta polityka wymieni je z nazwy.<?php endif; ?><?php else: ?>Strona nie używa dziś
 narzędzi analitycznych ani reklamowych (np. Google Analytics, Meta Pixel). Jeśli to się zmieni, takie narzędzia będą
 działać dopiero po Twojej zgodzie, wyrażonej w okienku zgód, a ta polityka wymieni je z nazwy.<?php endif; ?> Zgody zmienisz w każdej
 chwili przez link <a href="#ustawienia-cookies">„Ustawienia cookies”</a> w stopce strony; cookies usuniesz też
@@ -125,6 +133,8 @@ w ustawieniach przeglądarki.</p>
 <tr><td>widok</td><td>niezbędne</td><td>zapamiętuje, czy wyświetlać wersję strony na telefon, czy na komputer</td><td>12 miesięcy</td></tr>
 <?php if (DANE['ga4'] !== ''): ?><tr><td>_ga</td><td>analityczne (za zgodą)</td><td>Google Analytics: odróżnia kolejne wizyty tej samej przeglądarki</td><td>2 lata</td></tr>
 <tr><td>_ga_<?= htmlspecialchars(substr(DANE['ga4'], 2)) ?></td><td>analityczne (za zgodą)</td><td>Google Analytics: zapamiętuje stan bieżącej wizyty</td><td>2 lata</td></tr>
+<?php endif; ?><?php if (DANE['meta_pixel'] !== ''): ?><tr><td>_fbp</td><td>marketingowe (za zgodą)</td><td>Meta Pixel: rozpoznaje przeglądarkę przy pomiarze reklam na Facebooku i Instagramie</td><td>3 miesiące</td></tr>
+<tr><td>_fbc</td><td>marketingowe (za zgodą)</td><td>Meta Pixel: zapamiętuje kliknięcie w reklamę, z której ktoś wszedł na stronę</td><td>3 miesiące</td></tr>
 <?php endif; ?><tr><td>ludwinek_wewn</td><td>niezbędne</td><td>oznacza urządzenie gabinetu, żeby jego wizyty nie liczyły się do statystyk (tylko po zalogowaniu do panelu)</td><td>5 lat</td></tr>
 <tr><td>ludwinek_panel</td><td>niezbędne</td><td>logowanie do panelu edycji strony (tylko gabinet)</td><td>30 dni</td></tr>
 <tr><td>ludwinek_podglad</td><td>niezbędne</td><td>logowanie do podglądu strony przed jej startem (tylko osoby z hasłem)</td><td>60 dni</td></tr>

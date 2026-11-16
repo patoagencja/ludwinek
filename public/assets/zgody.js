@@ -8,13 +8,14 @@
 (function () {
   'use strict';
   var GA4_ID = 'G-5LJXC4VE72'; // Google Analytics 4, strumień ludwinekaesthetic.pl (ten sam w _dane.php)
-  var META_PIXEL_ID = '';   // np. '1234567890'
+  var META_PIXEL_ID = '1007489489076693'; // Meta Pixel gabinetu (po zgodzie marketingowej)
+  var GTM_ID = 'GTM-KF8CWCDB';  // Google Tag Manager gabinetu: po dowolnej zgodzie, z Consent Mode (tagi reklamowe tylko przy zgodzie marketingowej)
   var NAZWA = 'zgody', WERSJA = 1, WAZNOSC_DNI = 365;
 
   var D = document, H = D.documentElement;
   // podgląd w panelu edycji (/panel) nie liczy się do statystyk
-  if (/[?&]panel=1\b/.test(location.search)) { GA4_ID = ''; META_PIXEL_ID = ''; }
-  var narzedzia = { a: !!GA4_ID, m: !!META_PIXEL_ID };
+  if (/[?&]panel=1\b/.test(location.search)) { GA4_ID = ''; META_PIXEL_ID = ''; GTM_ID = ''; }
+  var narzedzia = { a: !!GA4_ID || !!GTM_ID, m: !!META_PIXEL_ID || !!GTM_ID };
   var podglad = /[?&]zgody=pokaz\b/.test(location.search);
   if (!narzedzia.a && !narzedzia.m && !podglad) { narzedzia.brak = true; }
 
@@ -29,7 +30,7 @@
     return z;
   }
 
-  var zaladowane = { a: false, m: false };
+  var zaladowane = { a: false, m: false, g: false, zgoda: false };
   function grupa() {
     var p = location.pathname.replace(/\/+$/, '') || '/';
     if (p === '/') return 'Strona główna';
@@ -43,12 +44,22 @@
   }
   function uruchom(z) {
     if (!z) return;
+    if (!z.a && !z.m) return;
+    window.dataLayer = window.dataLayer || [];
+    if (!window.gtag) window.gtag = function () { window.dataLayer.push(arguments); };
+    // Google Consent Mode: stan zgód dla GA4 i dla tagów w GTM (tagi reklamowe w GTM respektują ad_storage)
+    var stan = { analytics_storage: z.a ? 'granted' : 'denied', ad_storage: z.m ? 'granted' : 'denied',
+      ad_user_data: z.m ? 'granted' : 'denied', ad_personalization: z.m ? 'granted' : 'denied' };
+    window.gtag('consent', zaladowane.zgoda ? 'update' : 'default', stan);
+    zaladowane.zgoda = true;
+    window.dataLayer.push({ event: 'zgody', zgoda_analityczna: z.a ? 1 : 0, zgoda_marketingowa: z.m ? 1 : 0 });
+    if (GTM_ID && !zaladowane.g) {
+      zaladowane.g = true;
+      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      var g = D.createElement('script'); g.async = true; g.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(GTM_ID); D.head.appendChild(g);
+    }
     if (z.a && GA4_ID && !zaladowane.a) {
       zaladowane.a = true;
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function () { window.dataLayer.push(arguments); };
-      window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: z.m ? 'granted' : 'denied',
-        ad_user_data: z.m ? 'granted' : 'denied', ad_personalization: z.m ? 'granted' : 'denied' });
       window.gtag('js', new Date());
       // grupa treści (raport „Grupy treści”) i ruch wewnętrzny gabinetu (ciasteczko z panelu: filtr „Internal Traffic” w GA4)
       var cfg = { content_group: grupa() };
@@ -64,7 +75,7 @@
         s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, D, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
       window.fbq('init', META_PIXEL_ID); window.fbq('track', 'PageView');
     }
-    if (zaladowane.a || zaladowane.m) wczytajPomiar();
+    if (zaladowane.a || zaladowane.m || zaladowane.g) wczytajPomiar();
   }
 
   var CSS = '' +
@@ -96,8 +107,8 @@
       '<a href="/polityka-prywatnosci#cookies">Więcej w polityce prywatności</a>.</p>' +
       '<div class="zk"' + (ustawienia ? '' : ' hidden') + '>' +
       '<label><input type="checkbox" checked disabled><span><b>Niezbędne</b>Działanie strony i zapamiętanie Twoich wyborów. Zawsze włączone.</span></label>' +
-      '<label><input type="checkbox" id="zgody-a"' + (z.a ? ' checked' : '') + '><span><b>Analityczne</b>Google Analytics: anonimowe statystyki, które pomagają ulepszać stronę.</span></label>' +
-      '<label><input type="checkbox" id="zgody-m"' + (z.m ? ' checked' : '') + '><span><b>Marketingowe</b>Google Ads i Meta (Facebook, Instagram): pomiar i dopasowanie reklam.</span></label>' +
+      '<label><input type="checkbox" id="zgody-a"' + (z.a ? ' checked' : '') + '><span><b>Analityczne</b>Google Analytics (przez Google Tag Manager): statystyki odwiedzin, które pomagają ulepszać stronę.</span></label>' +
+      '<label><input type="checkbox" id="zgody-m"' + (z.m ? ' checked' : '') + '><span><b>Marketingowe</b>Meta Pixel (Facebook, Instagram) i Google Ads: pomiar skuteczności i dopasowanie reklam.</span></label>' +
       '</div>' +
       '<div class="zb">' +
       (ustawienia ? '<button type="button" class="zg" data-z="zapisz">Zapisz wybór</button>' : '') +
@@ -116,7 +127,7 @@
       else w = zapisz(D.getElementById('zgody-a').checked, D.getElementById('zgody-m').checked);
       zamknij(b);
       // wycofanie wcześniejszej zgody: narzędzia już załadowane wyłączy dopiero przeładowanie strony
-      if ((zaladowane.a && !w.a) || (zaladowane.m && !w.m)) location.reload(); else uruchom(w);
+      if ((zaladowane.a && !w.a) || (zaladowane.m && !w.m) || (zaladowane.g && (!w.a || !w.m))) location.reload(); else uruchom(w);
     });
     var pierwszy = b.querySelector('button'); if (pierwszy && ustawienia) pierwszy.focus();
   }
@@ -129,11 +140,20 @@
   window.laZdarzenie = function (nazwa, par) {
     par = par || {};
     try { if (zaladowane.a && window.gtag) window.gtag('event', nazwa, par); } catch (e) {}
+    // GTM: te same zdarzenia w dataLayer jako la_<nazwa> (wyzwalacz „Zdarzenie niestandardowe”); e-commerce w formacie GA4
+    try {
+      if (zaladowane.g) {
+        var w = { event: 'la_' + nazwa }, k;
+        for (k in par) if (k !== 'items') w[k] = par[k];
+        if (par.items) { window.dataLayer.push({ ecommerce: null }); w.ecommerce = { currency: par.currency || 'PLN', value: par.value, transaction_id: par.transaction_id, items: par.items }; }
+        window.dataLayer.push(w);
+      }
+    } catch (e) {}
     try { if (zaladowane.m && window.fbq && META[nazwa]) { var it = par.items && par.items[0]; window.fbq('track', META[nazwa], it ? { content_name: it.item_name, content_category: it.item_category, currency: 'PLN', value: par.value || 0 } : par.zabieg ? { content_name: par.zabieg } : {}); } } catch (e) {}
   };
   function tekst(el) { return String(el.getAttribute('aria-label') || el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80); }
   D.addEventListener('click', function (e) {
-    if (!zaladowane.a && !zaladowane.m) return;
+    if (!zaladowane.a && !zaladowane.m && !zaladowane.g) return;
     var a = e.target.closest && e.target.closest('a[href],button'); if (!a) return;
     var h = a.getAttribute('href') || '', par = { link_text: tekst(a), strona: location.pathname };
     if (window.laKontekst) { var k = window.laKontekst(a); par.sekcja = k.sekcja; par.zabieg = k.zabieg; }
