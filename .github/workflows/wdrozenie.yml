@@ -74,6 +74,25 @@ jobs:
           rm -rf stripe
           echo "::notice::Stripe skonfigurowany (tryb $TRYB), webhook: $URL"
 
+      - name: Ustawienia promocji (jednorazowa poprawka z repo)
+        env:
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          # narzedzia/ustawienia-poprawka.json (jeśli jest) dopisuje pola do ustawień promocji na serwerze; po użyciu plik usuwamy z repo
+          U=kopia-panelu/_panel-dane/_ustawienia.json
+          echo "Ustawienia promocji na serwerze:"; cat "$U" 2>/dev/null || echo "(brak, promocje nie były zapisywane)"
+          echo "Zmian tekstów/zdjęć z panelu: $(jq length kopia-panelu/_panel-dane/_edycje.json 2>/dev/null || echo 0)"
+          [ -f narzedzia/ustawienia-poprawka.json ] || exit 0
+          mkdir -p popr; if [ -f "$U" ]; then cp "$U" popr/u.json; else echo '{}' > popr/u.json; fi
+          jq -s '.[0] * .[1]' popr/u.json narzedzia/ustawienia-poprawka.json > popr/_ustawienia.json
+          echo "Po poprawce:"; cat popr/_ustawienia.json
+          S="set ftp:ssl-allow true; set ssl:verify-certificate no; set ftp:passive-mode true; set net:max-retries 3; set net:timeout 30; set cmd:fail-exit true"
+          ftp() { lftp --env-password -u "$FTP_USER" -e "$S; $1; bye" "ftp://$FTP_HOST"; }
+          if ftp "cd $DOMENA" >/dev/null 2>&1; then KAT="$DOMENA"; else KAT="."; fi
+          ftp "cd $KAT; mkdir -p _panel-dane; cd _panel-dane; put popr/_ustawienia.json -o _ustawienia.json"
+          echo "::notice::Ustawienia promocji poprawione"
+
       - name: Kopia zmian z panelu
         uses: actions/upload-artifact@v4
         with:
