@@ -58,6 +58,8 @@ function zl(int $grosze): string
 function voucher_cennik(): array
 {
     $html = edycje_zastosuj((string)file_get_contents(__DIR__ . '/_strony/Voucher-Desktop.html'), 'Voucher');
+    require_once __DIR__ . '/_ustawienia.php';
+    $html = promo_html($html);   // vouchery w cenie promocyjnej: płatność liczy tę samą cenę co strona
     if (!preg_match('/const D = (\{.*?\});\n/s', $html, $m)) return [];
     $d = json_decode($m[1], true);
     return is_array($d) ? $d : [];

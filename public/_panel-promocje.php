@@ -64,14 +64,16 @@ input[type=text],input[type=number],input[type=date],select{width:100%;min-heigh
 
 <section class="card">
 <h2>Rabat na zabiegi</h2>
-<p class="opis">Przy wszystkich cenach zabiegów pojawi się przekreślona cena i cena po rabacie. Ceny voucherów zostają bez zmian.</p>
+<p class="opis">Przy wszystkich cenach zabiegów pojawi się przekreślona cena i cena po rabacie. Ceny voucherów zmienią się tylko, jeśli zaznaczysz opcję niżej.</p>
 <label class="przel"><input type="checkbox" name="rabat_wl" value="1"<?= $u['rabat']['wl'] ? ' checked' : '' ?>> Włącz rabat</label>
 <div class="row">
 <div><label class="l" for="rp">Rabat (%)</label><input type="number" id="rp" name="rabat_procent" min="1" max="90" value="<?= $h($u['rabat']['procent'] ?: '') ?>" placeholder="np. 20"></div>
 <div><label class="l" for="rd">Do (włącznie, opcjonalnie)</label><input type="date" id="rd" name="rabat_do" value="<?= $h($u['rabat']['do']) ?>"></div>
 </div>
+<label class="przel" style="margin-top:14px"><input type="checkbox" name="rabat_vouchery" value="1"<?= $u['rabat']['vouchery'] ? ' checked' : '' ?>> Vouchery online w cenie promocyjnej</label>
+<p class="uwaga" style="margin-top:-6px">Voucher kosztuje wtedy tyle samo co zabieg po rabacie (np. 700 zł − 20% = 560 zł zamiast 630 zł). Dotyczy też płatności online. Vouchery kwotowe bez zmian.</p>
 <p class="cena" id="rc"></p>
-<p class="uwaga">Zgodnie z przepisami przy obniżce podajemy najniższą cenę z 30 dni przed nią. Strona pokazuje to w pasku automatycznie. Jeśli w ostatnich 30 dniach zmieniała się cena zabiegu, daj znać Danielowi.</p>
+<p class="uwaga">Zgodnie z przepisami przy obniżce podajemy najniższą cenę z 30 dni przed nią. Strona pokazuje to w pasku automatycznie. Jeśli w ostatnich 30 dniach cena zabiegu była niższa niż ta przekreślona, nie włączaj rabatu na ten okres.</p>
 </section>
 <button class="btn" type="submit">Zapisz</button>
 <p class="msg" id="msg" role="status"></p>

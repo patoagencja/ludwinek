@@ -175,7 +175,8 @@ if ($akcja === 'ustawienia') {
     if ($link !== '' && !preg_match('~^(/[\w\-/#?=&.%]*|https://[^\s<>"]+)$~u', $link)) panel_json(422, ['ok' => false, 'blad' => 'Link musi zaczynać się od / (strona gabinetu) albo https://.']);
     $u = [
         'pasek' => ['wl' => ($_POST['pasek_wl'] ?? '') === '1', 'tekst' => mb_substr(panel_czysc((string)($_POST['pasek_tekst'] ?? '')), 0, 160), 'link' => $link, 'do' => $data('pasek_do')],
-        'rabat' => ['wl' => ($_POST['rabat_wl'] ?? '') === '1', 'procent' => max(0, min(90, (int)($_POST['rabat_procent'] ?? 0))), 'do' => $data('rabat_do')],
+        'rabat' => ['wl' => ($_POST['rabat_wl'] ?? '') === '1', 'procent' => max(0, min(90, (int)($_POST['rabat_procent'] ?? 0))), 'do' => $data('rabat_do'),
+                    'vouchery' => ($_POST['rabat_vouchery'] ?? '') === '1'],
     ];
     if ($u['pasek']['wl'] && trim($u['pasek']['tekst']) === '') panel_json(422, ['ok' => false, 'blad' => 'Wpisz tekst paska albo go wyłącz.']);
     if ($u['rabat']['wl'] && $u['rabat']['procent'] < 1) panel_json(422, ['ok' => false, 'blad' => 'Wpisz rabat od 1 do 90%.']);
@@ -219,6 +220,10 @@ if ($akcja === 'tekst') {
     $na = $a[0] . trim($na) . $b[0];
     if (trim($na) === '') panel_json(400, ['ok' => false, 'blad' => 'Tekst nie może być pusty.']);
     if ($na === $z) panel_json(200, ['ok' => true, 'bez_zmian' => true]);
+    // ceny voucherów strona i płatność liczą z cennika: zmiana napisu niczego by nie zmieniła w płatności
+    if ($strona === 'Voucher' && preg_match('/^\s*(od )?\d+ zł\s*$/u', $z)) {
+        panel_json(422, ['ok' => false, 'blad' => 'Ceny voucherów strona liczy sama z cennika (to samo pobiera płatność). Żeby je obniżyć, w zakładce Promocje włącz rabat i zaznacz „Vouchery online w cenie promocyjnej”.']);
+    }
     // „tylko to miejsce”: tekst-kotwica stojący tuż przed (np. nazwa zabiegu przed ceną)
     $przed = $wszedzie ? '' : (string)($_POST['przed'] ?? '');
     if (mb_strlen($przed) > 5000) $przed = '';
@@ -232,8 +237,8 @@ if ($akcja === 'tekst') {
         $naStronie[$s] = max($naStronie[$s] ?? 0, $n);
     }
     $ile = array_sum($naStronie);
-    if ($ile === 0 && $przed !== '') panel_json(422, ['ok' => false, 'blad' => 'Nie umiem wskazać tego jednego miejsca. Wybierz „We wszystkich miejscach” albo napisz do Daniela.']);
-    if ($ile === 0) panel_json(422, ['ok' => false, 'blad' => 'Tego tekstu nie da się zmienić w panelu (strona tworzy go automatycznie). Napisz do Daniela, co zmienić.']);
+    if ($ile === 0 && $przed !== '') panel_json(422, ['ok' => false, 'blad' => 'Nie udało się wskazać tego jednego miejsca. Wybierz „Zmień we wszystkich miejscach na tej stronie”.']);
+    if ($ile === 0) panel_json(422, ['ok' => false, 'blad' => ($strona === 'Voucher' || preg_match('/^\\s*(od )?\\d+ zł\\s*$/u', $z) ? 'Tę cenę strona liczy sama z cennika, więc nie zmienisz jej klikiem. Ceny voucherów obniżysz w zakładce Promocje (opcja „Vouchery online w cenie promocyjnej”).' : 'Ten tekst strona tworzy automatycznie, więc nie da się go zmienić klikiem.')]);
     if (!edycje_zapisz(panel_dodaj($edycje, $cel, 'tekst', $z, $na, $przed))) panel_json(500, ['ok' => false, 'blad' => 'Nie udało się zapisać. Spróbuj ponownie.']);
     panel_json(200, ['ok' => true, 'miejsc' => $ile]);
 }
