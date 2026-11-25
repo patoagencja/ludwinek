@@ -14,7 +14,10 @@ SLUG = {'Home': '/', 'Zabieg': '/modelowanie-ust', 'Zabiegi': '/zabiegi', 'Derma
         'Blizny': '/terapia-blizn-i-rozstepow', 'Pielegnacja': '/zabiegi-pielegnacyjne', 'EventGlow': '/event-glow',
         'Signature': '/signature-glow', 'Mezczyzni': '/dla-mezczyzn', 'Problem': '/blizny-potradzikowe',
         'Cennik': '/cennik', 'Voucher': '/vouchery', 'Omnie': '/o-mnie', 'Informacje': '/informacje',
-        'Kontakt': '/kontakt', 'Maile': '/'}
+        'Kontakt': '/kontakt', 'Maile': '/',
+        # podstrony z narzedzia/nowe_zabiegi.py
+        'Hialuronowy': '/usuwanie-kwasu-hialuronowego', 'Stymulatory': '/stymulatory-tkankowe', 'Mezoterapia': '/mezoterapia-iglowa',
+        'Biopeeling': '/biopeeling', 'BrwiRzesy': '/brwi-i-rzesy', 'SkoraGlowy': '/mezoterapia-skory-glowy'}
 TITLE = {
     'Home': ('Ludwinek Aesthetic · kosmetologia i medycyna estetyczna, Warszawa',
              'Modelowanie ust, Dermapen 4.0 i terapie skóry dobierane po konsultacji. Gabinet Julii Ludwinek przy Placu Konstytucji w Warszawie.'),
@@ -32,6 +35,12 @@ TITLE = {
     'Voucher': ('Vouchery · Ludwinek Aesthetic, Warszawa', 'Vouchery na zabieg albo na kwotę.'),
     'Omnie': ('O mnie · Julia Ludwinek · Ludwinek Aesthetic', 'Julia Ludwinek, kosmetolog. Specjalizacja: modelowanie ust i terapie skóry.'),
     'Informacje': ('Informacje dla klientek · Ludwinek Aesthetic', 'Przygotowanie do zabiegu, zalecenia, przeciwwskazania, zasady rezerwacji i FAQ.'),
+    'Hialuronowy': ('Usuwanie kwasu hialuronowego · Ludwinek Aesthetic, Warszawa', 'Korekta lub rozpuszczenie wcześniejszego wypełniacza z kwasu hialuronowego, po konsultacji i kwalifikacji.'),
+    'Stymulatory': ('Stymulatory tkankowe · Ludwinek Aesthetic, Warszawa', 'Stymulatory tkankowe: Elisir, Neauvia, Xela Rederm, Sunekos, Karisma. Jędrność, gęstość i nawilżenie skóry, także okolicy oczu.'),
+    'Mezoterapia': ('Mezoterapia igłowa · Ludwinek Aesthetic, Warszawa', 'Mezoterapia igłowa twarzy, szyi, dekoltu, okolicy oczu i dłoni. Nawilżenie i odżywienie skóry, ceny według obszaru.'),
+    'Biopeeling': ('Biopeeling · Ludwinek Aesthetic, Warszawa', 'Biopeeling na przebarwienia, pory, nierówną strukturę i skórę trądzikową, bez długiej przerwy.'),
+    'BrwiRzesy': ('Brwi i rzęsy: laminacja i lifting · Ludwinek Aesthetic, Warszawa', 'Laminacja brwi, lifting i laminacja rzęs z koloryzacją. Ceny zabiegów i pakietu.'),
+    'SkoraGlowy': ('Mezoterapia skóry głowy · Ludwinek Aesthetic, Warszawa', 'Mezoterapia skóry głowy dla kobiet i mężczyzn: wsparcie przy wypadaniu i osłabionych włosach.'),
     'Kontakt': ('Kontakt · Ludwinek Aesthetic, Plac Konstytucji 1, Warszawa', 'Adres, godziny i formularz „Zapytaj o termin”. Plac Konstytucji 1, 00-647 Warszawa.'),
 }
 
@@ -40,9 +49,11 @@ def slugify(t):
     t = ''.join(c for c in t if not unicodedata.combining(c)).lower()
     return re.sub(r'[^a-z0-9]+', '-', t).strip('-')
 
-PROBLEMS = ['Blizny potrądzikowe', 'Przebarwienia', 'Rozszerzone pory', 'Nierówna struktura skóry', 'Przesuszenie',
+PROBLEMS = ['Blizny potrądzikowe', 'Trądzik', 'Przebarwienia', 'Rozszerzone pory', 'Nierówna struktura skóry', 'Przesuszenie',
             'Utrata jędrności', 'Zmarszczki', 'Oznaki starzenia', 'Rozstępy', 'Zmęczona lub szara skóra', 'Skóra głowy i włosy']
 PSLUG = {slugify(p): p for p in PROBLEMS}
+# problemy, które prowadzą prosto do zabiegu (np. na stronie dla mężczyzn)
+PROB_WPROST = {'zmeczona-szara-skora': '/signature-glow'}
 
 NAV = r'''<script id="la-nav">
 /* nawigacja na prawdziwej stronie (zamiast skryptu przełącznika podglądu): przewijanie do #kotwic z poprawką na
@@ -94,6 +105,9 @@ def links(s):
     # problem links: the anchor text says which problem → home picker (#znajdz-<problem>), Blizny → its own page
     def prob(m):
         txt = re.sub(r'<[^>]+>', ' ', m.group(3)); key = slugify(txt)
+        for k, href in PROB_WPROST.items():
+            if re.sub(r'^\d+-', '', key).startswith(k):
+                return f'<a {m.group(1)}href="{href}"{m.group(2)}>{m.group(3)}</a>'
         hit = next((sl for sl in PSLUG if sl and sl in key), None)
         href = '/blizny-potradzikowe' if (hit is None or hit == 'blizny-potradzikowe') else '/#znajdz-' + hit
         return f'<a {m.group(1)}href="{href}"{m.group(2)}>{m.group(3)}</a>'
@@ -258,6 +272,19 @@ def formularz(s):
     s = s.replace('</style>', '.kf-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}\n</style>', 1)
     return s
 
+def bez_placeholderow(s):
+    # zasady wizyt (zadatek, odwoływanie, spóźnienia) czekają na decyzje Julii: do tego czasu ich nie pokazujemy
+    s = re.sub(r'<li>[^<]*\[do ustalenia[^<]*</li>', '', s)
+    s = re.sub(r'"[^"\n]*\[do ustalenia[^"\n]*",\s*', '', s)
+    s = re.sub(r',\s*"[^"\n]*\[do ustalenia[^"\n]*"', '', s)
+    # inne miejsca z projektu „do uzupełnienia”
+    s = s.replace('Pracuję na sprawdzonych preparatach [Neauvia / inne], dobieranych', 'Pracuję na sprawdzonych preparatach, dobieranych')
+    s = s.replace('Zasady zwrotu opisuje [regulamin voucherów] (do uzupełnienia przez gabinet).',
+                  'Tak, w ciągu 14 dni od zakupu, jeśli voucher nie został wykorzystany. Szczegóły są w regulaminie voucherów.')
+    s = s.replace('<div class="ph" style="aspect-ratio: 16 / 10"><span class="cap">[Zdjęcia blizn przed / po serii Dermapen: do uzupełnienia]</span></div>',
+                  '<figure class="im" style="aspect-ratio: 16 / 10"><img src="/img/852188af96b05574c7940688b3cc70e1.jpg" alt="Zabieg Dermapen 4.0 w gabinecie" loading="lazy"></figure>')
+    return s
+
 def convert(name, imgs):
     key, var = name.rsplit('-', 1)
     s = open(os.path.join(SRC, name + '.html'), encoding='utf-8').read()
@@ -268,6 +295,7 @@ def convert(name, imgs):
     s = legal(s)
     s = vouchers(s, key)
     s = kontakt(s, key)
+    s = bez_placeholderow(s)
     s = mapy(s)
     t, d = TITLE[key]
     s = re.sub(r'<title>.*?</title>', lambda m: f'<title>{t}</title>\n<meta name="description" content="{d}">', s, count=1, flags=re.S)

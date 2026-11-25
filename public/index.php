@@ -14,6 +14,8 @@ const STRONY = [
     'terapia-blizn-i-rozstepow' => 'Blizny', 'zabiegi-pielegnacyjne' => 'Pielegnacja', 'event-glow' => 'EventGlow',
     'signature-glow' => 'Signature', 'dla-mezczyzn' => 'Mezczyzni', 'blizny-potradzikowe' => 'Problem',
     'cennik' => 'Cennik', 'vouchery' => 'Voucher', 'o-mnie' => 'Omnie', 'informacje' => 'Informacje', 'kontakt' => 'Kontakt',
+    'usuwanie-kwasu-hialuronowego' => 'Hialuronowy', 'stymulatory-tkankowe' => 'Stymulatory', 'mezoterapia-iglowa' => 'Mezoterapia',
+    'biopeeling' => 'Biopeeling', 'brwi-i-rzesy' => 'BrwiRzesy', 'mezoterapia-skory-glowy' => 'SkoraGlowy',
 ];
 
 $path = trim((string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH), '/');
@@ -53,6 +55,9 @@ function wyslij_strone(string $klucz, bool $prywatna): void
         $v = (string)@filemtime(__DIR__ . '/assets/panel-edytor.js');
         $html = str_replace('</body>', '<script src="/assets/panel-edytor.js?v=' . $v . '" data-strona="' . htmlspecialchars($klucz) . '"></script></body>', $html);
     }
+    require_once __DIR__ . '/_ustawienia.php';
+    $promo = promo_wstawka();   // pasek promocji i rabat z panelu (/panel/promocje)
+    if ($promo !== '') $html = str_replace('</body>', $promo . '</body>', $html);
     echo $html;
 }
 

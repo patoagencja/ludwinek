@@ -2,7 +2,8 @@
 // Wygląd panelu (/panel): logowanie albo edytor. Wołane z _panel.php.
 $zalogowany = panel_zalogowany();
 $NAZWY = [
-    '' => 'Strona główna', 'zabiegi' => 'Zabiegi', 'modelowanie-ust' => 'Modelowanie ust', 'dermapen' => 'Dermapen',
+    '' => 'Strona główna', 'zabiegi' => 'Zabiegi', 'modelowanie-ust' => 'Modelowanie ust', 'dermapen' => 'Dermapen', 'usuwanie-kwasu-hialuronowego' => 'Usuwanie kwasu hialuronowego', 'stymulatory-tkankowe' => 'Stymulatory tkankowe',
+    'mezoterapia-iglowa' => 'Mezoterapia igłowa', 'biopeeling' => 'Biopeeling', 'brwi-i-rzesy' => 'Brwi i rzęsy', 'mezoterapia-skory-glowy' => 'Mezoterapia skóry głowy',
     'terapia-blizn-i-rozstepow' => 'Terapia blizn i rozstępów', 'zabiegi-pielegnacyjne' => 'Zabiegi pielęgnacyjne',
     'event-glow' => 'Event Glow', 'signature-glow' => 'Signature Glow', 'dla-mezczyzn' => 'Dla mężczyzn',
     'blizny-potradzikowe' => 'Problemy skóry', 'cennik' => 'Cennik', 'vouchery' => 'Vouchery', 'o-mnie' => 'O mnie',
@@ -130,6 +131,7 @@ h1,h2{font-family:'Cormorant Garamond',Garamond,serif;font-weight:300;color:var(
 <header class="top">
 <b>Panel strony</b><span class="hide-m" style="font-size:13px;opacity:.7">Ludwinek Aesthetic</span>
 <span class="sp"></span>
+<a href="/panel/promocje">Promocje</a>
 <a href="/panel/vouchery">Vouchery</a>
 <a id="otworz" href="/" target="_blank" rel="noopener">Zobacz stronę ↗</a>
 <a href="/panel/wyloguj">Wyloguj</a>

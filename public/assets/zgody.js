@@ -34,7 +34,7 @@
   function grupa() {
     var p = location.pathname.replace(/\/+$/, '') || '/';
     if (p === '/') return 'Strona główna';
-    if (/^\/(modelowanie-ust|dermapen|terapia-blizn-i-rozstepow|zabiegi-pielegnacyjne|event-glow|signature-glow|dla-mezczyzn)$/.test(p)) return 'Zabieg';
+    if (/^\/(modelowanie-ust|dermapen|terapia-blizn-i-rozstepow|zabiegi-pielegnacyjne|event-glow|signature-glow|dla-mezczyzn|usuwanie-kwasu-hialuronowego|stymulatory-tkankowe|mezoterapia-iglowa|biopeeling|brwi-i-rzesy|mezoterapia-skory-glowy)$/.test(p)) return 'Zabieg';
     return { '/zabiegi': 'Lista zabiegów', '/blizny-potradzikowe': 'Problem skóry', '/cennik': 'Cennik', '/vouchery': 'Vouchery', '/o-mnie': 'O mnie',
       '/informacje': 'Informacje', '/kontakt': 'Kontakt', '/polityka-prywatnosci': 'Dokumenty', '/regulamin': 'Dokumenty' }[p] || 'Inne';
   }

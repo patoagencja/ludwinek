@@ -131,6 +131,13 @@ if ($akcja === '') {
     exit;
 }
 
+if ($akcja === 'promocje') {
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-store');
+    header('X-Frame-Options: DENY');
+    require __DIR__ . '/_panel-promocje.php';
+    exit;
+}
 if ($akcja === 'vouchery') {
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: no-store');
@@ -159,6 +166,21 @@ if ($akcja === 'lista') {
         $lista[] = $e + ['dziala' => $dziala, 'adres' => $e['strona'] === '*' ? '' : '/' . ($nazwy[$e['strona']] ?? '')];
     }
     panel_json(200, ['ok' => true, 'zmiany' => $lista]);
+}
+
+if ($akcja === 'ustawienia') {
+    require_once __DIR__ . '/_ustawienia.php';
+    $data = static fn($k) => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)($_POST[$k] ?? '')) ? (string)$_POST[$k] : '';
+    $link = trim((string)($_POST['pasek_link'] ?? ''));
+    if ($link !== '' && !preg_match('~^(/[\w\-/#?=&.%]*|https://[^\s<>"]+)$~u', $link)) panel_json(422, ['ok' => false, 'blad' => 'Link musi zaczynać się od / (strona gabinetu) albo https://.']);
+    $u = [
+        'pasek' => ['wl' => ($_POST['pasek_wl'] ?? '') === '1', 'tekst' => mb_substr(panel_czysc((string)($_POST['pasek_tekst'] ?? '')), 0, 160), 'link' => $link, 'do' => $data('pasek_do')],
+        'rabat' => ['wl' => ($_POST['rabat_wl'] ?? '') === '1', 'procent' => max(0, min(90, (int)($_POST['rabat_procent'] ?? 0))), 'do' => $data('rabat_do')],
+    ];
+    if ($u['pasek']['wl'] && trim($u['pasek']['tekst']) === '') panel_json(422, ['ok' => false, 'blad' => 'Wpisz tekst paska albo go wyłącz.']);
+    if ($u['rabat']['wl'] && $u['rabat']['procent'] < 1) panel_json(422, ['ok' => false, 'blad' => 'Wpisz rabat od 1 do 90%.']);
+    if (!ustawienia_zapisz($u)) panel_json(500, ['ok' => false, 'blad' => 'Nie udało się zapisać. Spróbuj ponownie.']);
+    panel_json(200, ['ok' => true]);
 }
 
 if ($akcja === 'voucher-status') {

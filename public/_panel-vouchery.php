@@ -40,7 +40,7 @@ h1{margin:0 0 4px;font:300 40px/1.05 'Cormorant Garamond',serif;color:var(--ink)
 </style>
 </head>
 <body>
-<header class="top"><b>Panel strony</b><span class="sp"></span><a href="/panel">Edycja strony</a><a href="/panel/wyloguj">Wyloguj</a></header>
+<header class="top"><b>Panel strony</b><span class="sp"></span><a href="/panel">Edycja strony</a><a href="/panel/promocje">Promocje</a><a href="/panel/wyloguj">Wyloguj</a></header>
 <main>
 <h1>Vouchery</h1>
 <p class="sub"><?= count($lista) ?> sprzedanych<?= $suma ? ' · razem ' . $h(zl($suma)) : '' ?>. Gdy klientka przychodzi z voucherem, wpisz kod i po zabiegu kliknij „Wykorzystany”.</p>

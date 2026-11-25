@@ -25,7 +25,8 @@
   var ZABIEGI = {
     'modelowanie-ust': 'Modelowanie ust', 'dermapen': 'Dermapen 4.0', 'terapia-blizn-i-rozstepow': 'Terapia blizn i rozstępów',
     'zabiegi-pielegnacyjne': 'Zabiegi pielęgnacyjne', 'event-glow': 'Event Glow', 'signature-glow': 'Ludwinek Signature Glow',
-    'dla-mezczyzn': 'Zabiegi dla mężczyzn', 'hialuronidaza': 'Hialuronidaza', 'stymulatory': 'Stymulatory tkankowe',
+    'dla-mezczyzn': 'Zabiegi dla mężczyzn', 'usuwanie-kwasu-hialuronowego': 'Usuwanie kwasu hialuronowego', 'stymulatory': 'Stymulatory tkankowe',
+    'stymulatory-tkankowe': 'Stymulatory tkankowe', 'mezoterapia-iglowa': 'Mezoterapia igłowa', 'brwi-i-rzesy': 'Brwi i rzęsy', 'mezoterapia-skory-glowy': 'Mezoterapia skóry głowy',
     'mezoterapia': 'Mezoterapia igłowa', 'biopeeling': 'Biopeeling', 'oczyszczanie': 'Oczyszczanie wodorowe',
     'pielegnacja': 'Zabiegi pielęgnacyjne', 'signature': 'Ludwinek Signature Glow', 'brwi-rzesy': 'Brwi i rzęsy',
     'skora-glowy': 'Mezoterapia skóry głowy', 'blizny': 'Terapia blizn i rozstępów'

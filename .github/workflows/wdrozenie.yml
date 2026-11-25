@@ -93,7 +93,7 @@ jobs:
           c=$(get "http://www.$DOMENA/"); echo "www → $c $(grep -i '^location:' head.txt | tr -d '\r')"
           c=$(get "https://$DOMENA/"); echo "/ → $c"; grep -q "location.protocol" body.txt || { echo "::error::brak przekierowania http → https w stronie"; ok=0; }
           if [ "$c" = 200 ] && ! grep -q 'już wkrótce' body.txt && grep -q 'Ludwinek' body.txt; then echo "  pełna strona OK"; else echo "::error::Strona główna nie pokazuje pełnej strony (HTTP $c)"; ok=0; fi
-          for a in modelowanie-ust zabiegi dermapen terapia-blizn-i-rozstepow zabiegi-pielegnacyjne event-glow signature-glow dla-mezczyzn blizny-potradzikowe cennik vouchery o-mnie informacje kontakt polityka-prywatnosci regulamin; do
+          for a in modelowanie-ust zabiegi dermapen usuwanie-kwasu-hialuronowego stymulatory-tkankowe mezoterapia-iglowa biopeeling brwi-i-rzesy mezoterapia-skory-glowy terapia-blizn-i-rozstepow zabiegi-pielegnacyjne event-glow signature-glow dla-mezczyzn blizny-potradzikowe cennik vouchery o-mnie informacje kontakt polityka-prywatnosci regulamin; do
             c=$(get "https://$DOMENA/$a"); [ "$c" = 200 ] || { echo "::error::/$a → $c"; ok=0; }
           done
           c=$(curl -s $R --max-time 30 -o /dev/null -w '%{http_code}' -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile' "https://$DOMENA/kontakt" || echo 000); echo "/kontakt na telefonie → $c"; [ "$c" = 200 ] || ok=0
