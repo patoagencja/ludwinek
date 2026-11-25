@@ -16,3 +16,6 @@ Strona gabinetu Ludwinek Aesthetic (Julia Ludwinek, Plac Konstytucji 1, Warszawa
   z cennika na stronie, ważność 12 miesięcy, kod i link do wydruku mailem, lista i realizacja w `/panel/vouchery`,
   regulamin `/regulamin-voucherow`. Klucz: sekret repo `STRIPE_KEY` (albo `STRIPE_KEY_TEST`); wdrożenie zapisuje go na
   serwerze i zakłada webhook (zmiana klucza w sekretach: wystarczy kolejne wgranie). Bez klucza (albo z kluczem testowym dla gości) strona podaje `_strony-wkrotce/` („Vouchery wkrótce”).
+- Podstrony zabiegów bez strony w projekcie (usuwanie kwasu hialuronowego, stymulatory, mezoterapia igłowa, biopeeling, brwi i rzęsy,
+  mezoterapia skóry głowy) robi `narzedzia/nowe_zabiegi.py` na wzór strony Dermapen (teksty i ceny w tym pliku), potem `konwertuj.py`.
+- Promocje: `/panel/promocje` (pasek u góry stron i rabat % z przekreśloną ceną; `public/_ustawienia.php`, `public/assets/promocje.js`).
