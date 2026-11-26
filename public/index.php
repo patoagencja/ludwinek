@@ -56,7 +56,7 @@ function wyslij_strone(string $klucz, bool $prywatna): void
         $html = str_replace('</body>', '<script src="/assets/panel-edytor.js?v=' . $v . '" data-strona="' . htmlspecialchars($klucz) . '"></script></body>', $html);
     }
     require_once __DIR__ . '/_ustawienia.php';
-    $html = promo_html($html);   // vouchery w cenie promocyjnej (opcja w panelu)
+    $html = promo_html($html, $klucz);   // ceny voucherów z panelu (ceny zabiegów, rabat online, promocja)
     $promo = promo_wstawka();   // pasek promocji i rabat z panelu (/panel/promocje)
     if ($promo !== '') $html = str_replace('</body>', $promo . '</body>', $html);
     echo $html;

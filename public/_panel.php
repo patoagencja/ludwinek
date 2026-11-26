@@ -178,7 +178,17 @@ if ($akcja === 'ustawienia') {
         'rabat' => ['wl' => ($_POST['rabat_wl'] ?? '') === '1', 'procent' => max(0, min(90, (int)($_POST['rabat_procent'] ?? 0))), 'do' => $data('rabat_do'),
                     'vouchery' => ($_POST['rabat_vouchery'] ?? '') === '1'],
         'vouchery' => ['rabat' => max(0, min(50, (int)($_POST['vouchery_rabat'] ?? 10)))],
+        'ceny' => [],
     ];
+    // ceny zabiegów dla voucherów: zapisujemy tylko te, które różnią się od cen z projektu
+    $wpis = (array)($_POST['ceny'] ?? []);
+    foreach (voucher_wiersze() as $w) {
+        $v = (int)preg_replace('/\D/', '', (string)($wpis[$w['klucz']] ?? ''));
+        if ($v > 0 && $v !== $w['gab0']) {
+            if ($v < 10 || $v > 20000) panel_json(422, ['ok' => false, 'blad' => 'Sprawdź cenę: ' . $w['zabieg'] . ($w['wariant'] ? ', ' . $w['wariant'] : '') . '.']);
+            $u['ceny'][$w['klucz']] = $v;
+        }
+    }
     if ($u['pasek']['wl'] && trim($u['pasek']['tekst']) === '') panel_json(422, ['ok' => false, 'blad' => 'Wpisz tekst paska albo go wyłącz.']);
     if ($u['rabat']['wl'] && $u['rabat']['procent'] < 1) panel_json(422, ['ok' => false, 'blad' => 'Wpisz rabat od 1 do 90%.']);
     if (!ustawienia_zapisz($u)) panel_json(500, ['ok' => false, 'blad' => 'Nie udało się zapisać. Spróbuj ponownie.']);
@@ -223,7 +233,7 @@ if ($akcja === 'tekst') {
     if ($na === $z) panel_json(200, ['ok' => true, 'bez_zmian' => true]);
     // ceny voucherów strona i płatność liczą z cennika: zmiana napisu niczego by nie zmieniła w płatności
     if ($strona === 'Voucher' && preg_match('/^\s*(od )?\d+ zł\s*$/u', $z)) {
-        panel_json(422, ['ok' => false, 'blad' => 'Ceny voucherów strona liczy sama z cen zabiegów (to samo pobiera płatność). Ustawisz je w zakładce Promocje → „Ceny voucherów online” (np. 0% = tyle samo co w cenniku).']);
+        panel_json(422, ['ok' => false, 'blad' => 'Ceny voucherów strona liczy sama z cen zabiegów (to samo pobiera płatność). Zmienisz je w zakładce Promocje → „Ceny zabiegów w voucherach”.']);
     }
     // „tylko to miejsce”: tekst-kotwica stojący tuż przed (np. nazwa zabiegu przed ceną)
     $przed = $wszedzie ? '' : (string)($_POST['przed'] ?? '');

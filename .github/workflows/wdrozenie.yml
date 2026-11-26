@@ -84,6 +84,7 @@ jobs:
           U=kopia-panelu/_panel-dane/_ustawienia.json
           echo "Ustawienia promocji na serwerze:"; cat "$U" 2>/dev/null || echo "(brak, promocje nie były zapisywane)"
           echo "Zmian tekstów/zdjęć z panelu: $(jq length kopia-panelu/_panel-dane/_edycje.json 2>/dev/null || echo 0)"
+          jq -r '.[] | select(.typ == "tekst") | "  \(.strona): \(.z|tostring|.[0:60]) → \(.na|tostring|.[0:60])\(if .przed then " (przy: \(.przed|.[0:40]))" else "" end)"' kopia-panelu/_panel-dane/_edycje.json 2>/dev/null || true
           [ -f narzedzia/ustawienia-poprawka.json ] || exit 0
           mkdir -p popr; if [ -f "$U" ]; then cp "$U" popr/u.json; else echo '{}' > popr/u.json; fi
           jq -s '.[0] * .[1]' popr/u.json narzedzia/ustawienia-poprawka.json > popr/_ustawienia.json

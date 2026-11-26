@@ -37,6 +37,9 @@ input[type=text],input[type=number],input[type=date],select{width:100%;min-heigh
 .cena{margin-top:12px;font-size:14px}.cena s{opacity:.55;margin-right:6px}.cena b{color:var(--acc)}
 .uwaga{margin:10px 0 0;font-size:12.5px;color:var(--mut)}
 .btn{min-height:50px;padding:0 24px;border:0;background:var(--acc);color:#fff;font:500 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.ceny .cz{margin:14px 0 4px;font:500 10.5px/1.4 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.ceny .cr{display:grid;grid-template-columns:1fr 96px 22px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ceny .cr input{min-height:38px;text-align:right}.ceny .cr em{font-style:normal;color:var(--mut)}.ceny .cr.zm span{color:var(--acc);font-weight:500}
 .msg{margin:12px 0 0;font-size:14px}.msg.ok{color:var(--ok)}.msg.err{color:var(--err)}
 @media (max-width:560px){.row{grid-template-columns:1fr}}
 </style>
@@ -84,6 +87,16 @@ input[type=text],input[type=number],input[type=date],select{width:100%;min-heigh
 </div>
 <p class="cena" id="vc"></p>
 <p class="uwaga">0% = voucher kosztuje tyle samo co zabieg w cenniku. 10% = jak w projekcie strony. Vouchery kwotowe bez zmian.</p>
+</section>
+<section class="card">
+<h2>Ceny zabiegów w voucherach</h2>
+<p class="opis">Cena zabiegu w gabinecie, od której strona liczy cenę vouchera (z rabatem online i promocją). Gdy zmienisz cenę w cenniku, zmień ją też tutaj.</p>
+<div class="ceny">
+<?php $ost = ''; foreach (voucher_wiersze() as $w): if ($w['zabieg'] !== $ost): $ost = $w['zabieg']; ?><p class="cz"><?= $h($w['zabieg']) ?></p><?php endif; ?>
+<label class="cr<?= $w['gab'] !== $w['gab0'] ? ' zm' : '' ?>"><span><?= $h(trim($w['grupa'] . ($w['grupa'] && $w['wariant'] ? ' · ' : '') . $w['wariant']) ?: 'cena zabiegu') ?></span>
+<input type="number" min="10" max="20000" step="1" name="ceny[<?= $h($w['klucz']) ?>]" value="<?= (int)$w['gab'] ?>"><em>zł</em></label>
+<?php endforeach; ?>
+</div>
 </section>
 <button class="btn" type="submit">Zapisz</button>
 <p class="msg" id="msg" role="status"></p>

@@ -17,6 +17,8 @@ function ustawienia(): array
                     'vouchery' => !empty($d['rabat']['vouchery'])],
         // stały rabat na vouchery online względem ceny w gabinecie (w projekcie 10%; 0 = voucher w cenie z cennika)
         'vouchery' => ['rabat' => max(0, min(50, (int)($d['vouchery']['rabat'] ?? 10)))],
+        // ceny zabiegów w gabinecie dla voucherów, zmienione w panelu: „slug|grupa|wiersz” => zł
+        'ceny' => array_map('intval', array_filter((array)($d['ceny'] ?? []), static fn($v) => (int)$v > 0)),
         'zmieniono' => (string)($d['zmieniono'] ?? ''),
     ];
 }
@@ -60,27 +62,77 @@ function voucher_cena(int $gab): array
     return [$p > 0 ? min($std, (int)round($gab * (100 - $p) / 100)) : $std, $std];
 }
 
-/** Ceny voucherów online na stronach i w płatności według ustawień z panelu (zwykły rabat online i promocja).
+/** Zabiegi i warianty z danych voucherów (strona /vouchery) z cenami w gabinecie: z projektu i po zmianach z panelu. */
+function voucher_wiersze(): array
+{
+    static $w = null;
+    if ($w !== null) return $w;
+    $w = [];
+    $html = edycje_zastosuj((string)@file_get_contents(__DIR__ . '/_strony/Voucher-Desktop.html'), 'Voucher');
+    if (!preg_match('/const D = (\{.*?\});\n/s', $html, $m) || !is_array($D = json_decode($m[1], true))) return $w;
+    $ceny = ustawienia()['ceny'];
+    foreach ($D['vz'] ?? [] as $z) foreach ($z['g'] as $gi => $g) foreach ($g[1] as $ri => $r) {
+        $k = $z['slug'] . '|' . $gi . '|' . $ri;
+        $w[] = ['klucz' => $k, 'slug' => $z['slug'], 'zabieg' => $z['name'], 'grupa' => (string)$g[0], 'wariant' => (string)$r[0],
+                'gab0' => (int)$r[2], 'gab' => $ceny[$k] ?? (int)$r[2]];
+    }
+    return $w;
+}
+
+// strony zabiegów → vouchery, których ceny pokazują
+const VOUCHER_STRONY = ['Zabieg' => ['modelowanie-ust', 'usuwanie-kwasu-hialuronowego'], 'Hialuronowy' => ['usuwanie-kwasu-hialuronowego'],
+    'Stymulatory' => ['stymulatory'], 'Mezoterapia' => ['mezoterapia'], 'Dermapen' => ['dermapen'], 'Blizny' => ['blizny'], 'Biopeeling' => ['biopeeling'],
+    'Pielegnacja' => ['pielegnacja', 'oczyszczanie'], 'EventGlow' => ['event-glow'], 'Signature' => ['signature'], 'BrwiRzesy' => ['brwi-rzesy'], 'SkoraGlowy' => ['skora-glowy']];
+
+/** Ceny voucherów online na stronach i w płatności według ustawień z panelu: ceny zabiegów, zwykły rabat online i promocja.
     Zmienia dane voucherów (z nich liczy też płatność, _vouchery-dane.php) i napisy „voucher online … zł” na stronach.
     W źródle stron vouchery online są o 10% tańsze niż zabieg, więc cenę w gabinecie odtwarzamy jako cena / 0,9. */
-function promo_html(string $html): string
+function promo_html(string $html, string $klucz = ''): string
 {
-    $r0 = voucher_rabat_staly(); $p = promo_vouchery_procent();
-    if ($r0 === 10 && $p <= 0) return $html;
+    $r0 = voucher_rabat_staly(); $p = promo_vouchery_procent(); $ceny = ustawienia()['ceny'];
+    if ($r0 === 10 && $p <= 0 && !$ceny) return $html;
+    $wiersze = voucher_wiersze();
+    $wg = static fn(array $slugi) => array_values(array_filter($wiersze, static fn($w) => in_array($w['slug'], $slugi, true)));
+    $od = static function (array $ws): string {   // „od 420 zł” / „420 zł” z wierszy vouchera
+        $c = array_map(static fn($w) => voucher_cena($w['gab'])[0], $ws);
+        return $c ? (count(array_unique($c)) > 1 ? 'od ' : '') . min($c) . ' zł' : '';
+    };
     // dane strony /vouchery: wiersze [nazwa, cena online, cena w gabinecie]
-    $html = (string)preg_replace_callback('/const D = (\{.*?\});\n/s', static function ($m) {
+    $html = (string)preg_replace_callback('/const D = (\{.*?\});\n/s', static function ($m) use ($ceny, $od, $wg) {
         $D = json_decode($m[1], true);
-        if (!is_array($D) || empty($D['vz'])) return $m[0];
-        foreach ($D['vz'] as &$z) foreach ($z['g'] as &$g) foreach ($g[1] as &$r) $r[1] = voucher_cena((int)$r[2])[0];
+        if (!is_array($D)) return $m[0];
+        if (!empty($D['vz'])) {
+            foreach ($D['vz'] as &$z) foreach ($z['g'] as $gi => &$g) foreach ($g[1] as $ri => &$r) {
+                $r[2] = $ceny[$z['slug'] . '|' . $gi . '|' . $ri] ?? (int)$r[2];
+                $r[1] = voucher_cena((int)$r[2])[0];
+            }
+        } elseif (!empty($D['treat'])) {   // lista zabiegów: „voucher online od … zł” z wierszy danego vouchera
+            foreach ($D['treat'] as &$t) {
+                $ws = $wg([(string)($t['slug'] ?? '')]);
+                if (!$ws || empty($t['online'])) continue;
+                $t['online'] = $od($ws);
+                if (isset($t['vlabel'])) $t['vlabel'] = preg_replace('/voucher online (od )?\d+ zł/u', 'voucher online ' . $t['online'], (string)$t['vlabel']);
+                $t['_ok'] = 1;
+            }
+        } else return $m[0];
         return 'const D = ' . json_encode($D, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ";\n";
     }, $html);
-    $z = static fn(int $n): int => voucher_cena((int)round($n / 0.9))[0];
-    $html = (string)preg_replace_callback('/(voucher online )(od )?(\d+)( zł)/i', static fn($m) => $m[1] . $m[2] . $z((int)$m[3]) . $m[4], $html);
-    $html = (string)preg_replace_callback('/("online": ")(od )?(\d+)( zł")/', static fn($m) => $m[1] . $m[2] . $z((int)$m[3]) . $m[4], $html);
-    $html = (string)preg_replace_callback('/(Voucher online · 10% taniej<\/(?:dt><dd|span><b[^>]*)>)(od )?(\d+)( zł)/', static fn($m) => $m[1] . $m[2] . $z((int)$m[3]) . $m[4], $html);
+    if (strpos($html, '"_ok":1') !== false) {   // lista zabiegów gotowa (bez przeliczania napisów niżej)
+        $html = str_replace(',"_ok":1', '', $html);
+    } else {
+        // napisy na stronach zabiegów: cena w gabinecie z projektu → cena z panelu (tylko wiersze voucherów tej strony)
+        $ws = $wg(VOUCHER_STRONY[$klucz] ?? []);
+        $mapa = [];
+        foreach ($ws as $w) if (!isset($mapa[$w['gab0']])) $mapa[$w['gab0']] = $w['gab'];
+        $z = static function (int $n) use ($mapa): int { $g = (int)round($n / 0.9); return voucher_cena($mapa[$g] ?? $g)[0]; };
+        $html = (string)preg_replace_callback('/(voucher online )(od )?(\d+)( zł)/i', static fn($m) => $m[1] . $m[2] . $z((int)$m[3]) . $m[4], $html);
+        $html = (string)preg_replace_callback('/("online": ")(od )?(\d+)( zł")/', static fn($m) => $m[1] . $m[2] . $z((int)$m[3]) . $m[4], $html);
+        $pierwszy = $wg(array_slice(VOUCHER_STRONY[$klucz] ?? [], 0, 1));
+        $html = (string)preg_replace_callback('/(Voucher online · 10% taniej<\/(?:dt><dd|span><b[^>]*)>)(od )?(\d+)( zł)/',
+            static fn($m) => $m[1] . ($m[2] && $pierwszy ? $od($pierwszy) : $m[2] . $z((int)$m[3]) . $m[4]), $html);
+    }
     // podpis przy cenie vouchera
-    $tanszy = $p > $r0;
-    $podpis = $tanszy ? ' · cena promocyjna' : ($r0 > 0 ? " · {$r0}% taniej" : '');
+    $podpis = $p > $r0 ? ' · cena promocyjna' : ($r0 > 0 ? " · {$r0}% taniej" : '');
     return str_replace(['Voucher online · 10% taniej', 'VOUCHER ONLINE · 10% TANIEJ'], ['Voucher online' . $podpis, 'VOUCHER ONLINE' . mb_strtoupper($podpis)], $html);
 }
 
@@ -95,8 +147,8 @@ function promo_wstawka(): string
         $html = edycje_zastosuj((string)@file_get_contents(__DIR__ . '/_strony/Voucher-Desktop.html'), 'Voucher');
         if (preg_match('/const D = (\{.*?\});\n/s', $html, $m) && is_array($D = json_decode($m[1], true))) {
             $mapa = [];
-            foreach ($D['vz'] ?? [] as $z) foreach ($z['g'] as $g) foreach ($g[1] as $r) {
-                [$nowa, $std] = voucher_cena((int)$r[2]);
+            foreach (voucher_wiersze() as $w) {
+                [$nowa, $std] = voucher_cena($w['gab']);
                 if ($nowa < $std) $mapa[(string)$nowa] = $std;
             }
             if ($mapa) { $cfg['vmapa'] = $mapa; $cfg['vstd'] = voucher_rabat_staly(); }
