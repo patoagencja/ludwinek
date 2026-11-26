@@ -1,6 +1,6 @@
 name: Sprawdź domenę
 
-# Tylko sprawdzenie (bez wgrywania): DNS ludwinekaesthetic.pl, strona „Wkrótce” pod domeną i certyfikat SSL.
+# Tylko sprawdzenie (bez wgrywania): DNS, SSL i pełny audyt strony na żywo w przeglądarce (narzedzia/audyt-na-zywo.js).
 # Uruchamia się pushem na gałąź „sprawdzenie” (np. pusty commit).
 on:
   push:
@@ -9,8 +9,9 @@ on:
 jobs:
   sprawdz:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
+      - uses: actions/checkout@v4
       - name: DNS, strona i SSL
         run: |
           D=ludwinekaesthetic.pl; IP=195.2.223.12
@@ -19,6 +20,11 @@ jobs:
           echo "Rejestr .pl (a-dns.pl) NS: $(dig +short NS $D @a-dns.pl 2>/dev/null | tr '\n' ' ') $(dig +noall +authority NS $D @a-dns.pl 2>/dev/null | tr '\n' ' ')"
           for r in 1.1.1.1 8.8.8.8 9.9.9.9 208.67.222.222; do echo "A przez $r: $(dig +short A $D @$r 2>/dev/null | tr '\n' ' ') (TTL $(dig +noall +answer A $D @$r 2>/dev/null | awk '{print $2}' | head -1))"; done
           c=$(curl -s --max-time 30 -o b.txt -w '%{http_code}' "http://$D/" || echo 000)
-          if grep -q 'już wkrótce' b.txt; then echo "::notice::DOMENA_OK: http://$D pokazuje nową stronę"; else echo "::warning::DOMENA_STARA: http://$D pokazuje jeszcze coś innego (HTTP $c)"; fi
           c=$(curl -s --max-time 30 -o /dev/null -w '%{http_code}' "https://$D/" || echo 000)
           if [ "$c" = 200 ]; then echo "::notice::SSL_OK: https://$D działa"; else echo "::warning::SSL_BRAK: https://$D nie działa (HTTP $c)"; fi
+
+      - name: Audyt strony na żywo (komputer i telefon, promocje, vouchery, płatność)
+        run: |
+          npm i --no-save --silent playwright@1.48.2
+          npx playwright install --with-deps chromium >/dev/null
+          node narzedzia/audyt-na-zywo.js
