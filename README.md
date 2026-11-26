@@ -19,3 +19,4 @@ Strona gabinetu Ludwinek Aesthetic (Julia Ludwinek, Plac Konstytucji 1, Warszawa
 - Podstrony zabiegów bez strony w projekcie (usuwanie kwasu hialuronowego, stymulatory, mezoterapia igłowa, biopeeling, brwi i rzęsy,
   mezoterapia skóry głowy) robi `narzedzia/nowe_zabiegi.py` na wzór strony Dermapen (teksty i ceny w tym pliku), potem `konwertuj.py`.
 - Promocje: `/panel/promocje` (pasek u góry stron i rabat % z przekreśloną ceną; `public/_ustawienia.php`, `public/assets/promocje.js`).
+- Ceny zabiegów: `/panel/promocje` → „Ceny zabiegów”. Jedna tabela dla całej strony: cennik, strony zabiegów, lista zabiegów, vouchery i kwota płatności (`promo_html()`, `cennik_ceny()` w `public/_ustawienia.php`). Audyt sprawdza, czy wszędzie jest to samo.

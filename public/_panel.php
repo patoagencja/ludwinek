@@ -233,7 +233,7 @@ if ($akcja === 'tekst') {
     if ($na === $z) panel_json(200, ['ok' => true, 'bez_zmian' => true]);
     // ceny voucherów strona i płatność liczą z cennika: zmiana napisu niczego by nie zmieniła w płatności
     if ($strona === 'Voucher' && preg_match('/^\s*(od )?\d+ zł\s*$/u', $z)) {
-        panel_json(422, ['ok' => false, 'blad' => 'Ceny voucherów strona liczy sama z cen zabiegów (to samo pobiera płatność). Zmienisz je w zakładce Promocje → „Ceny zabiegów w voucherach”.']);
+        panel_json(422, ['ok' => false, 'blad' => 'Ceny voucherów strona liczy sama z cen zabiegów (to samo pobiera płatność). Zmienisz je w zakładce Promocje → „Ceny zabiegów”.']);
     }
     // „tylko to miejsce”: tekst-kotwica stojący tuż przed (np. nazwa zabiegu przed ceną)
     $przed = $wszedzie ? '' : (string)($_POST['przed'] ?? '');

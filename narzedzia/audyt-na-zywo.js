@@ -31,7 +31,7 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
         const pary = [...document.querySelectorAll('s.la-stara')].filter((s) => s.offsetParent !== null || s.getClientRects().length)
           .map((s) => [s.textContent, s.nextSibling && s.nextSibling.data]);
         // ceny bez przekreślenia (poza voucherami, ratami i stroną /vouchery)
-        const WZ = /^\s*(od\s+)?\d{2,5}\s?zł(\s*\/\s*[a-ząęółśżźćń.]+)?\s*$/i, bez = [];
+        const WZ = /^\s*(od\s+)?\d{2,5}\s?zł(\s*\/\s*(?:\d+\s?)?[a-ząęółśżźćń.]+)?\s*$/i, bez = [];
         const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n;
         while ((n = w.nextNode())) {
           if (!WZ.test(n.data)) continue;
@@ -123,12 +123,42 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
     }
   }
 
+  // ---- spójność: cena zabiegu w voucherach = cena na liście zabiegów i w tabeli cen na stronie zabiegu ----
+  {
+    const c = await b.newContext();
+    const dane = async u => { const h = await (await c.request.get(B + u)).text(); const m = h.match(/const D = (\{.*?\});\n/s); return m ? JSON.parse(m[1]) : {}; };
+    const V = await dane('/vouchery'), T = await dane('/zabiegi');
+    const gab = {}; for (const z of V.vz || []) gab[z.slug] = z.g.flatMap(g => g[1].map(r => +r[2]));
+    let n = 0;
+    for (const t of T.treat || []) {
+      const g = gab[t.slug]; if (!g || !t.salon) continue;
+      const m = String(t.salon).match(/(\d+)/); n++;
+      if (!m || +m[1] !== Math.min(...g)) BLAD(`/zabiegi ${t.name}: cena ${t.salon}, w voucherach od ${Math.min(...g)} zł`);
+    }
+    const STRONY = { '/modelowanie-ust': ['modelowanie-ust'], '/usuwanie-kwasu-hialuronowego': ['usuwanie-kwasu-hialuronowego'], '/stymulatory-tkankowe': ['stymulatory'],
+      '/mezoterapia-iglowa': ['mezoterapia'], '/dermapen': ['dermapen'], '/terapia-blizn-i-rozstepow': ['blizny'], '/biopeeling': ['biopeeling'],
+      '/zabiegi-pielegnacyjne': ['pielegnacja', 'oczyszczanie'], '/event-glow': ['event-glow'], '/signature-glow': ['signature'], '/brwi-i-rzesy': ['brwi-rzesy'], '/mezoterapia-skory-glowy': ['skora-glowy'] };
+    for (const [u, sl] of Object.entries(STRONY)) {
+      const P = await dane(u); if (!P.variants) continue;
+      const strona = P.variants.flatMap(g => (g[2] || []).filter(r => /voucher online/.test(r[2] || '')).map(r => +String(r[1]).match(/\d+/)[0]));
+      const vo = sl.flatMap(s => gab[s] || []);
+      n++;
+      if (strona.join() !== vo.join()) BLAD(`${u}: ceny w tabeli ${strona.join('/')} ≠ w voucherach ${vo.join('/')}`);
+    }
+    OK(`spójność cen zabiegów (vouchery = lista zabiegów = strony zabiegów): sprawdzonych ${n}`);
+    await c.close();
+  }
+
   // ---- płatność: kwota sesji Stripe = cena na stronie ----
   if (ZAMOWIEN > 0) {
     const c = await b.newContext();
     const proby = [{ typ: 'zabieg', zabieg: 'modelowanie-ust' }, { typ: 'zabieg', zabieg: 'stymulatory', g: '0', r: '2' }, { typ: 'kwota', va: '0' }].slice(0, ZAMOWIEN);
-    const pr = promo && promo.vmapa ? promo.rabat : 0;
-    const oczek = [Math.min(630, Math.round(700 * (100 - pr) / 100)), Math.min(720, Math.round(800 * (100 - pr) / 100)), 300];
+    // cena „Do zapłaty” z danych strony /vouchery (te same, które widzi klient; ceny zabiegów mogą być zmienione w panelu)
+    const html = await (await c.request.get(B + '/vouchery')).text();
+    const D = JSON.parse((html.match(/const D = (\{.*?\});\n/s) || [, '{}'])[1]);
+    const vz = s => (D.vz || []).find(z => z.slug === s);
+    const cena = (s, g, r) => { const z = vz(s); return z ? +z.g[g][1][r][1] : NaN; };
+    const oczek = [cena('modelowanie-ust', 0, 0), cena('stymulatory', 0, 2), 300];
     for (const [i, f] of proby.entries()) {
       const r = await c.request.post(B + '/voucher/zamow', { form: { email: 'audyt@ludwinekaesthetic.pl', zgoda: '1', ...f } });
       const j = await r.json().catch(() => ({}));

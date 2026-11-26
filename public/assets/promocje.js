@@ -33,7 +33,7 @@
   // ---- rabat ----
   var naVouchery = /^\/vouchery/.test(location.pathname), vmapa = P.vmapa || null;
   if (!procent || (naVouchery && !vmapa)) return;
-  var WZ = /^(\s*)(od\s+)?(\d{2,5})\s?zł(\s*\/\s*[a-ząęółśżźćń.]+)?(\s*)$/i;
+  var WZ = /^(\s*)(od\s+)?(\d{2,5})\s?zł(\s*\/\s*(?:\d+\s?)?[a-ząęółśżźćń.]+)?(\s*)$/i;
   var POMIN = 'script,style,small,s,.klarna,.vpay,.la-pasek,#zgody,[data-bez-rabatu],a[href^="/vouchery"],.zv,option,title';
   function pomin(el) {
     if (!el || el.closest(POMIN)) return true;

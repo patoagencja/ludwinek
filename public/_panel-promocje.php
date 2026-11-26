@@ -89,8 +89,8 @@ input[type=text],input[type=number],input[type=date],select{width:100%;min-heigh
 <p class="uwaga">0% = voucher kosztuje tyle samo co zabieg w cenniku. 10% = jak w projekcie strony. Vouchery kwotowe bez zmian.</p>
 </section>
 <section class="card">
-<h2>Ceny zabiegów w voucherach</h2>
-<p class="opis">Cena zabiegu w gabinecie, od której strona liczy cenę vouchera (z rabatem online i promocją). Gdy zmienisz cenę w cenniku, zmień ją też tutaj.</p>
+<h2>Ceny zabiegów</h2>
+<p class="opis">Tu zmieniasz cenę zabiegu w gabinecie. Strona sama wpisze ją w cenniku, na stronie zabiegu, na liście zabiegów i w voucherach (płatność też). Cen nie trzeba już zmieniać klikając w tekst.</p>
 <div class="ceny">
 <?php $ost = ''; foreach (voucher_wiersze() as $w): if ($w['zabieg'] !== $ost): $ost = $w['zabieg']; ?><p class="cz"><?= $h($w['zabieg']) ?></p><?php endif; ?>
 <label class="cr<?= $w['gab'] !== $w['gab0'] ? ' zm' : '' ?>"><span><?= $h(trim($w['grupa'] . ($w['grupa'] && $w['wariant'] ? ' · ' : '') . $w['wariant']) ?: 'cena zabiegu') ?></span>
