@@ -71,6 +71,19 @@ function promo_wstawka(): string
     $u = ustawienia();
     $cfg = [];
     if (promo_aktywne($u['rabat']) && $u['rabat']['procent'] > 0) $cfg['rabat'] = $u['rabat']['procent'];
+    // vouchery w cenie promocyjnej: mapa „nowa cena → zwykła cena online”, żeby strona /vouchery mogła przekreślić starą cenę
+    $pv = promo_vouchery_procent();
+    if ($pv > 0) {
+        $html = edycje_zastosuj((string)@file_get_contents(__DIR__ . '/_strony/Voucher-Desktop.html'), 'Voucher');
+        if (preg_match('/const D = (\{.*?\});\n/s', $html, $m) && is_array($D = json_decode($m[1], true))) {
+            $mapa = [];
+            foreach ($D['vz'] ?? [] as $z) foreach ($z['g'] as $g) foreach ($g[1] as $r) {
+                $nowa = min((int)$r[1], (int)round($r[2] * (100 - $pv) / 100));
+                if ($nowa < (int)$r[1]) $mapa[(string)$nowa] = (int)$r[1];
+            }
+            if ($mapa) $cfg['vmapa'] = $mapa;
+        }
+    }
     if (promo_aktywne($u['pasek']) && trim($u['pasek']['tekst']) !== '') $cfg['pasek'] = ['tekst' => $u['pasek']['tekst'], 'link' => $u['pasek']['link']];
     if (!$cfg) return '';
     $v = (string)@filemtime(__DIR__ . '/assets/promocje.js');

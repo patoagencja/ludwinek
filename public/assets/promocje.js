@@ -31,7 +31,8 @@
   }
 
   // ---- rabat ----
-  if (!procent || /^\/vouchery/.test(location.pathname)) return;
+  var naVouchery = /^\/vouchery/.test(location.pathname), vmapa = P.vmapa || null;
+  if (!procent || (naVouchery && !vmapa)) return;
   var WZ = /^(\s*)(od\s+)?(\d{2,5})\s?zł(\s*\/\s*[a-ząęółśżźćń.]+)?(\s*)$/i;
   var POMIN = 'script,style,small,s,.klarna,.vpay,.offer,.la-pasek,#zgody,[data-bez-rabatu],a[href^="/vouchery"],.zv,option,title';
   function pomin(el) {
@@ -41,6 +42,18 @@
     return /voucher/i.test(el.textContent);
   }
   function zl(n) { return n + ' zł'; }
+  // strona /vouchery: tylko ceny voucherów na zabieg (lista, warianty, „Do zapłaty”), które są w mapie promocji
+  function vouchPomin(n) {
+    var el = n.parentElement, m = n.data.match(WZ);
+    if (!el || !m || !vmapa[m[3]] || el.closest('s,.la-pasek,#zgody')) return true;
+    if (el.closest('.vvar') || (el.closest('[id^="v-"]') && el.closest('button'))) return false;
+    if (el.closest('.offer .orow.main')) {
+      // przełącznik „Na zabieg / Na kwotę”: wybrany ma klasę „on” (albo aria-pressed)
+      var b = [].slice.call(D.querySelectorAll('button')).some(function (x) { return /^\s*na zabieg\s*$/i.test(x.textContent) && (x.classList.contains('on') || x.getAttribute('aria-pressed') === 'true'); });
+      return !b;
+    }
+    return true;
+  }
   // Nie podmieniamy węzłów, które przerysowuje skrypt strony: zmieniamy tylko ich tekst na cenę po rabacie
   // i wstawiamy przed nimi przekreśloną cenę. Gdy strona wpisze nową cenę (np. inny wariant), liczymy ją od nowa.
   var stan = typeof WeakMap === 'function' ? new WeakMap() : null;
@@ -51,10 +64,11 @@
     while ((n = wk.nextNode())) {
       var z = stan.get(n);
       if (z && z.po === n.data && z.s.nextSibling === n) continue;
-      if (WZ.test(n.data) && !pomin(n.parentElement)) lista.push(n);
+      if (WZ.test(n.data) && (naVouchery ? vouchPomin(n) === false : !pomin(n.parentElement))) lista.push(n);
     }
     lista.forEach(function (n) {
       var m = n.data.match(WZ), stara = +m[3], nowa = Math.round(stara * (100 - procent) / 100);
+      if (naVouchery) { nowa = stara; stara = vmapa[String(nowa)]; }   // na /vouchery cena już jest promocyjna: dopisujemy starą
       var z = stan.get(n), s = z && z.s && z.s.nextSibling === n ? z.s : D.createElement('s');
       s.className = 'la-stara'; s.__la = n; s.textContent = (m[2] || '') + zl(stara) + (m[4] || '');
       if (s.nextSibling !== n) n.parentNode.insertBefore(s, n);
