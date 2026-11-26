@@ -51,7 +51,12 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
       if (st !== 200) BLAD(`${nazwa} ${u}: HTTP ${st}`);
       if (err.length) BLAD(`${nazwa} ${u}: błędy JS: ${err.join(' | ')}`);
       if (zleZap.length) BLAD(`${nazwa} ${u}: nieudane zapytania: ${zleZap.join(', ')}`);
-      if (d.h1 !== 1) BLAD(`${nazwa} ${u}: h1 = ${d.h1}`);
+      if (d.h1 !== 1 || st !== 200) {
+        const diag = await p.evaluate(() => ({ url: location.href, title: document.title, txt: document.body ? document.body.innerText.slice(0, 200) : '', html: document.documentElement.outerHTML.length,
+          ma: { dc: !!document.querySelector('script[src*="dc.js"]'), tpl: document.querySelectorAll('template').length, root: !!document.getElementById('dc-root') } })).catch((e) => ({ blad: e.message }));
+        const nag = r && typeof r.headers === 'function' ? r.headers() : {};
+        BLAD(`${nazwa} ${u}: h1 = ${d.h1}, HTTP ${st}; diagnoza: ${JSON.stringify(diag)}; nagłówki: ${JSON.stringify({ server: nag.server, cc: nag['cache-control'], ct: nag['content-type'], len: nag['content-length'], age: nag.age, xc: nag['x-cache'] })}`);
+      }
       if (d.zle) BLAD(`${nazwa} ${u}: zakazane słowo albo placeholder w tekście`);
       const pr = d.P && d.P.rabat;
       if (d.P && d.P.pasek && !d.pasek) BLAD(`${nazwa} ${u}: brak paska promocji`);
