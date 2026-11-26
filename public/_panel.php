@@ -177,6 +177,7 @@ if ($akcja === 'ustawienia') {
         'pasek' => ['wl' => ($_POST['pasek_wl'] ?? '') === '1', 'tekst' => mb_substr(panel_czysc((string)($_POST['pasek_tekst'] ?? '')), 0, 160), 'link' => $link, 'do' => $data('pasek_do')],
         'rabat' => ['wl' => ($_POST['rabat_wl'] ?? '') === '1', 'procent' => max(0, min(90, (int)($_POST['rabat_procent'] ?? 0))), 'do' => $data('rabat_do'),
                     'vouchery' => ($_POST['rabat_vouchery'] ?? '') === '1'],
+        'vouchery' => ['rabat' => max(0, min(50, (int)($_POST['vouchery_rabat'] ?? 10)))],
     ];
     if ($u['pasek']['wl'] && trim($u['pasek']['tekst']) === '') panel_json(422, ['ok' => false, 'blad' => 'Wpisz tekst paska albo go wyłącz.']);
     if ($u['rabat']['wl'] && $u['rabat']['procent'] < 1) panel_json(422, ['ok' => false, 'blad' => 'Wpisz rabat od 1 do 90%.']);
@@ -222,7 +223,7 @@ if ($akcja === 'tekst') {
     if ($na === $z) panel_json(200, ['ok' => true, 'bez_zmian' => true]);
     // ceny voucherów strona i płatność liczą z cennika: zmiana napisu niczego by nie zmieniła w płatności
     if ($strona === 'Voucher' && preg_match('/^\s*(od )?\d+ zł\s*$/u', $z)) {
-        panel_json(422, ['ok' => false, 'blad' => 'Ceny voucherów strona liczy sama z cennika (to samo pobiera płatność). Żeby je obniżyć, w zakładce Promocje włącz rabat i zaznacz „Vouchery online w cenie promocyjnej”.']);
+        panel_json(422, ['ok' => false, 'blad' => 'Ceny voucherów strona liczy sama z cen zabiegów (to samo pobiera płatność). Ustawisz je w zakładce Promocje → „Ceny voucherów online” (np. 0% = tyle samo co w cenniku).']);
     }
     // „tylko to miejsce”: tekst-kotwica stojący tuż przed (np. nazwa zabiegu przed ceną)
     $przed = $wszedzie ? '' : (string)($_POST['przed'] ?? '');

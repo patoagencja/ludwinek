@@ -75,6 +75,16 @@ input[type=text],input[type=number],input[type=date],select{width:100%;min-heigh
 <p class="cena" id="rc"></p>
 <p class="uwaga">Zgodnie z przepisami przy obniżce podajemy najniższą cenę z 30 dni przed nią. Strona pokazuje to w pasku automatycznie. Jeśli w ostatnich 30 dniach cena zabiegu była niższa niż ta przekreślona, nie włączaj rabatu na ten okres.</p>
 </section>
+<section class="card">
+<h2>Ceny voucherów online</h2>
+<p class="opis">O ile voucher kupiony online jest tańszy niż zabieg w cenniku. Działa zawsze, także bez promocji.</p>
+<div class="row">
+<div><label class="l" for="vr">Rabat na vouchery online (%)</label><input type="number" id="vr" name="vouchery_rabat" min="0" max="50" value="<?= (int)$u['vouchery']['rabat'] ?>"></div>
+<div></div>
+</div>
+<p class="cena" id="vc"></p>
+<p class="uwaga">0% = voucher kosztuje tyle samo co zabieg w cenniku. 10% = jak w projekcie strony. Vouchery kwotowe bez zmian.</p>
+</section>
 <button class="btn" type="submit">Zapisz</button>
 <p class="msg" id="msg" role="status"></p>
 </form>
@@ -89,6 +99,7 @@ input[type=text],input[type=number],input[type=date],select{width:100%;min-heigh
     $('pp').innerHTML = '';
     var s = document.createElement('span'); s.textContent = t; $('pp').appendChild(s);
     if (rab) { var sm = document.createElement('small'); sm.textContent = 'Przekreślona cena to najniższa cena z 30 dni przed obniżką.'; $('pp').appendChild(sm); }
+    var vr = Math.max(0, Math.min(50, +f.vouchery_rabat.value || 0)); $('vc').innerHTML = 'Przykład: zabieg 800 zł → voucher online <b>' + Math.round(800 * (100 - vr) / 100) + ' zł</b>';
     $('rc').innerHTML = rab ? 'Przykład: <s>700 zł</s> <b>' + Math.round(700 * (100 - pr) / 100) + ' zł</b>' : '';
   }
   $('pl').addEventListener('change', function () { var w = this.value === '*'; $('plw').style.display = w ? '' : 'none'; if (!w) $('plw').value = this.value; });

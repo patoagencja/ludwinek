@@ -34,11 +34,13 @@
   var naVouchery = /^\/vouchery/.test(location.pathname), vmapa = P.vmapa || null;
   if (!procent || (naVouchery && !vmapa)) return;
   var WZ = /^(\s*)(od\s+)?(\d{2,5})\s?zł(\s*\/\s*[a-ząęółśżźćń.]+)?(\s*)$/i;
-  var POMIN = 'script,style,small,s,.klarna,.vpay,.offer,.la-pasek,#zgody,[data-bez-rabatu],a[href^="/vouchery"],.zv,option,title';
+  var POMIN = 'script,style,small,s,.klarna,.vpay,.la-pasek,#zgody,[data-bez-rabatu],a[href^="/vouchery"],.zv,option,title';
   function pomin(el) {
     if (!el || el.closest(POMIN)) return true;
     var dd = el.closest('dd');   // „Voucher online · 10% taniej” w nagłówku zabiegu
     if (dd && dd.previousElementSibling && /voucher|vouch/i.test(dd.previousElementSibling.textContent)) return true;
+    var b = el.closest('.orow b');   // wiersz „Voucher online · …” w sekcji ceny zabiegu
+    if (b && b.previousElementSibling && /^\s*voucher online/i.test(b.previousElementSibling.textContent)) return true;
     return /voucher/i.test(el.textContent);
   }
   function zl(n) { return n + ' zł'; }

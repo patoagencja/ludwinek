@@ -15,6 +15,8 @@ function ustawienia(): array
                     'do' => (string)($d['pasek']['do'] ?? '')],
         'rabat' => ['wl' => !empty($d['rabat']['wl']), 'procent' => max(0, min(90, (int)($d['rabat']['procent'] ?? 0))), 'do' => (string)($d['rabat']['do'] ?? ''),
                     'vouchery' => !empty($d['rabat']['vouchery'])],
+        // stały rabat na vouchery online względem ceny w gabinecie (w projekcie 10%; 0 = voucher w cenie z cennika)
+        'vouchery' => ['rabat' => max(0, min(50, (int)($d['vouchery']['rabat'] ?? 10)))],
         'zmieniono' => (string)($d['zmieniono'] ?? ''),
     ];
 }
@@ -43,26 +45,43 @@ function promo_vouchery_procent(): int
     return promo_aktywne($r) && !empty($r['vouchery']) ? (int)$r['procent'] : 0;
 }
 
-/** Vouchery online w cenie promocyjnej: cena vouchera = cena zabiegu po rabacie (jeśli to mniej niż zwykła cena online).
-    Zmienia dane voucherów (z nich liczy też płatność, _vouchery-dane.php) i napisy „voucher online … zł” na stronach. */
+/** Zwykły rabat na vouchery online (% od ceny w gabinecie), ustawiany w panelu; w projekcie 10%. */
+function voucher_rabat_staly(): int
+{
+    return ustawienia()['vouchery']['rabat'];
+}
+
+/** Cena vouchera online z ceny zabiegu w gabinecie: zwykły rabat online, a w promocji z opcją „vouchery w cenie
+    promocyjnej” cena zabiegu po rabacie, jeśli jest niższa. [cena, zwykła cena online] */
+function voucher_cena(int $gab): array
+{
+    $std = (int)round($gab * (100 - voucher_rabat_staly()) / 100);
+    $p = promo_vouchery_procent();
+    return [$p > 0 ? min($std, (int)round($gab * (100 - $p) / 100)) : $std, $std];
+}
+
+/** Ceny voucherów online na stronach i w płatności według ustawień z panelu (zwykły rabat online i promocja).
+    Zmienia dane voucherów (z nich liczy też płatność, _vouchery-dane.php) i napisy „voucher online … zł” na stronach.
+    W źródle stron vouchery online są o 10% tańsze niż zabieg, więc cenę w gabinecie odtwarzamy jako cena / 0,9. */
 function promo_html(string $html): string
 {
-    $p = promo_vouchery_procent();
-    if ($p <= 0) return $html;
-    $nowa = static fn(int $gab, int $online): int => min($online, (int)round($gab * (100 - $p) / 100));
+    $r0 = voucher_rabat_staly(); $p = promo_vouchery_procent();
+    if ($r0 === 10 && $p <= 0) return $html;
     // dane strony /vouchery: wiersze [nazwa, cena online, cena w gabinecie]
-    $html = (string)preg_replace_callback('/const D = (\{.*?\});\n/s', static function ($m) use ($nowa) {
+    $html = (string)preg_replace_callback('/const D = (\{.*?\});\n/s', static function ($m) {
         $D = json_decode($m[1], true);
         if (!is_array($D) || empty($D['vz'])) return $m[0];
-        foreach ($D['vz'] as &$z) foreach ($z['g'] as &$g) foreach ($g[1] as &$r) $r[1] = $nowa((int)$r[2], (int)$r[1]);
+        foreach ($D['vz'] as &$z) foreach ($z['g'] as &$g) foreach ($g[1] as &$r) $r[1] = voucher_cena((int)$r[2])[0];
         return 'const D = ' . json_encode($D, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ";\n";
     }, $html);
-    // pozostałe strony: zwykła cena online to cena w gabinecie − 10%
-    $z = static fn(int $n): int => $nowa((int)round($n / 0.9), $n);
+    $z = static fn(int $n): int => voucher_cena((int)round($n / 0.9))[0];
     $html = (string)preg_replace_callback('/(voucher online )(od )?(\d+)( zł)/i', static fn($m) => $m[1] . $m[2] . $z((int)$m[3]) . $m[4], $html);
     $html = (string)preg_replace_callback('/("online": ")(od )?(\d+)( zł")/', static fn($m) => $m[1] . $m[2] . $z((int)$m[3]) . $m[4], $html);
-    $html = (string)preg_replace_callback('/(<dt>Voucher online · )10% taniej(<\/dt><dd>)(od )?(\d+)( zł)/', static fn($m) => $m[1] . 'cena promocyjna' . $m[2] . $m[3] . $z((int)$m[4]) . $m[5], $html);
-    return str_replace(['Voucher online · 10% taniej', 'VOUCHER ONLINE · 10% TANIEJ'], ['Voucher online · cena promocyjna', 'VOUCHER ONLINE · CENA PROMOCYJNA'], $html);
+    $html = (string)preg_replace_callback('/(Voucher online · 10% taniej<\/(?:dt><dd|span><b[^>]*)>)(od )?(\d+)( zł)/', static fn($m) => $m[1] . $m[2] . $z((int)$m[3]) . $m[4], $html);
+    // podpis przy cenie vouchera
+    $tanszy = $p > $r0;
+    $podpis = $tanszy ? ' · cena promocyjna' : ($r0 > 0 ? " · {$r0}% taniej" : '');
+    return str_replace(['Voucher online · 10% taniej', 'VOUCHER ONLINE · 10% TANIEJ'], ['Voucher online' . $podpis, 'VOUCHER ONLINE' . mb_strtoupper($podpis)], $html);
 }
 
 /** Kod wstawiany przed </body> każdej strony, gdy promocja jest włączona. */
@@ -72,16 +91,15 @@ function promo_wstawka(): string
     $cfg = [];
     if (promo_aktywne($u['rabat']) && $u['rabat']['procent'] > 0) $cfg['rabat'] = $u['rabat']['procent'];
     // vouchery w cenie promocyjnej: mapa „nowa cena → zwykła cena online”, żeby strona /vouchery mogła przekreślić starą cenę
-    $pv = promo_vouchery_procent();
-    if ($pv > 0) {
+    if (promo_vouchery_procent() > 0) {
         $html = edycje_zastosuj((string)@file_get_contents(__DIR__ . '/_strony/Voucher-Desktop.html'), 'Voucher');
         if (preg_match('/const D = (\{.*?\});\n/s', $html, $m) && is_array($D = json_decode($m[1], true))) {
             $mapa = [];
             foreach ($D['vz'] ?? [] as $z) foreach ($z['g'] as $g) foreach ($g[1] as $r) {
-                $nowa = min((int)$r[1], (int)round($r[2] * (100 - $pv) / 100));
-                if ($nowa < (int)$r[1]) $mapa[(string)$nowa] = (int)$r[1];
+                [$nowa, $std] = voucher_cena((int)$r[2]);
+                if ($nowa < $std) $mapa[(string)$nowa] = $std;
             }
-            if ($mapa) $cfg['vmapa'] = $mapa;
+            if ($mapa) { $cfg['vmapa'] = $mapa; $cfg['vstd'] = voucher_rabat_staly(); }
         }
     }
     if (promo_aktywne($u['pasek']) && trim($u['pasek']['tekst']) !== '') $cfg['pasek'] = ['tekst' => $u['pasek']['tekst'], 'link' => $u['pasek']['link']];

@@ -36,7 +36,8 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
         while ((n = w.nextNode())) {
           if (!WZ.test(n.data)) continue;
           const el = n.parentElement; if (!el || !el.getClientRects().length) continue;
-          if (el.closest('script,style,s,small,.klarna,.offer,.vpay,.zv,a[href^="/vouchery"],#zgody,option')) continue;
+          if (el.closest('script,style,s,small,.klarna,.vpay,.zv,a[href^="/vouchery"],#zgody,option')) continue;
+          const ob = el.closest('.orow b'); if (ob && ob.previousElementSibling && /^\s*voucher online/i.test(ob.previousElementSibling.textContent)) continue;
           const dd = el.closest('dd'); if (dd && dd.previousElementSibling && /voucher/i.test(dd.previousElementSibling.textContent)) continue;
           if (/voucher/i.test(el.textContent)) continue;
           if (n.previousSibling && n.previousSibling.nodeName === 'S') continue;
@@ -68,7 +69,7 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
         // nagłówek zabiegu: voucher online = cena zabiegu po rabacie (gdy vouchery w promocji)
         if (d.dt.length === 2 && d.P.vmapa) {
           const stara = d.pary.length ? liczba(d.pary[0][0]) : NaN, vouch = liczba(d.dt[1][1]);
-          const ocz = Math.min(Math.round(stara * 0.9), Math.round(stara * (100 - pr) / 100));
+          const r0 = d.P.vstd ?? 10, ocz = Math.min(Math.round(stara * (100 - r0) / 100), Math.round(stara * (100 - pr) / 100));
           if (vouch !== ocz) BLAD(`${nazwa} ${u}: voucher w nagłówku ${vouch} zł, a powinno być ${ocz} zł (${d.dt[1][0]})`);
         }
         if (!zleWyl.length && !bez.length) OK(`${nazwa} ${u}: ${d.pary.length} cen przekreślonych poprawnie`);
@@ -99,7 +100,7 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
             const opis = `${id}${grupy ? ' / grupa ' + (g + 1) : ''}${wiersze ? ' / wiersz ' + (r + 1) : ''}`;
             if (nowa !== ocz) BLAD(`${nazwa} /vouchery ${opis}: Do zapłaty ${nowa} zł, a po rabacie z ${gab} zł powinno być ${ocz} zł`);
             else if (!o.s) BLAD(`${nazwa} /vouchery ${opis}: brak przekreślonej ceny przy ${nowa} zł`);
-            else if (stara !== Math.round(gab * 0.9)) BLAD(`${nazwa} /vouchery ${opis}: przekreślone ${stara} zł, zwykła cena online to ${Math.round(gab * 0.9)} zł`);
+            else if (stara !== Math.round(gab * (100 - (promo.vstd ?? 10)) / 100)) BLAD(`${nazwa} /vouchery ${opis}: przekreślone ${stara} zł, zwykła cena online to ${Math.round(gab * (100 - (promo.vstd ?? 10)) / 100)} zł`);
             sprawdzone++;
           }
         }
