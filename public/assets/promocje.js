@@ -60,6 +60,7 @@
   function zmien(root) {
     if (!stan) return;
     D.querySelectorAll('s.la-stara').forEach(function (s) { var n = s.__la; if (!n || s.nextSibling !== n || !n.parentNode) s.remove(); });
+    D.querySelectorAll('.la-cena').forEach(function (el) { if (!el.querySelector('s.la-stara')) el.classList.remove('la-cena'); });
     var wk = D.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n, lista = [];
     while ((n = wk.nextNode())) {
       var z = stan.get(n);

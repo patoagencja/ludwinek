@@ -72,7 +72,11 @@ function voucher_wybor(array $w): ?array
     $liczba = static fn($x) => (int)preg_replace('/\D/', '', (string)$x);
     if (($w['typ'] ?? '') === 'kwota') {
         $va = $D['va'] ?? [];
-        $i = (int)($w['va'] ?? -1);
+        $i = (int)($w['va'] ?? -2);
+        if ($i === -1) {   // „Inna kwota”: dowolna kwota 100–5000 zł, w pełnych złotych
+            $kw = (int)preg_replace('/\D/', '', (string)($w['kwota'] ?? ''));
+            return $kw >= 100 && $kw <= 5000 ? ['Voucher kwotowy', zl($kw * 100) . ' do wykorzystania na dowolne zabiegi', $kw * 100, 0, ''] : null;
+        }
         if (!isset($va[$i])) return null;
         $kw = $liczba($va[$i]) * 100;
         return $kw > 0 ? ['Voucher kwotowy', zl($kw) . ' do wykorzystania na dowolne zabiegi', $kw, 0, ''] : null;

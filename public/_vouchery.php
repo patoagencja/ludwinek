@@ -22,6 +22,7 @@ if ($akcja === 'zamow') {
     if (!filter_var($mail, FILTER_VALIDATE_EMAIL) || preg_match('/[\s,;<>]/', $mail)) vj(422, ['ok' => false, 'bledy' => ['mail' => 'Sprawdź adres e-mail, np. anna@gmail.com.']]);
     if (($_POST['zgoda'] ?? '') !== '1') vj(422, ['ok' => false, 'bledy' => ['ok' => 'Zaakceptuj regulamin voucherów, żeby przejść dalej.']]);
     $w = voucher_wybor($_POST);
+    if (!$w && ($_POST['typ'] ?? '') === 'kwota' && (int)($_POST['va'] ?? 0) === -1) vj(422, ['ok' => false, 'blad' => 'Kwota vouchera musi być od 100 do 5000 zł.']);
     if (!$w) vj(422, ['ok' => false, 'blad' => 'Nie rozpoznaję wybranego vouchera. Odśwież stronę i wybierz go jeszcze raz.']);
     [$nazwa, $szcz, $kwota, $gab, $slug] = $w;
     if ($kwota < 200 || $kwota > 2000000) vj(422, ['ok' => false, 'blad' => 'Nieprawidłowa kwota vouchera.']);

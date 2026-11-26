@@ -430,6 +430,12 @@ html.dr-pin body{position:fixed;left:0;right:0;top:var(--dr-y,0);width:100%}
 @media (min-width:721px){.logo .lw{height:30px}.hd .logo .lw{height:30px}.mono .lm{height:44px}.hd .mono .lm{height:38px}.ft .logo .lw{height:46px}}
 /* ==== /LOGO ==== */
 
+/* voucher kwotowy: pole „Inna kwota” */
+.la-kw{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--ink);max-width:260px}
+.la-kw input{flex:1;min-width:0;border:0;background:transparent;padding:10px 0;font:300 34px/1.1 var(--serif);color:var(--ink);-moz-appearance:textfield}
+.la-kw input::-webkit-outer-spin-button,.la-kw input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.la-kw input:focus{outline:none}.la-kw:focus-within{border-bottom-color:var(--gold, #C9A97F)}
+.la-kw span{font:300 28px/1 var(--serif);color:var(--mute, #6F675C)}
 /* vouchery wkrótce: sprzedaż online jeszcze nie działa (brak płatności), Klarna wyłączona */
 .klarna{display:none!important}
 .la a.vsoon-btn,.la a.vsoon-btn:hover{background:transparent!important;border-color:currentColor!important;color:inherit!important;opacity:.5;letter-spacing:.06em;white-space:nowrap;text-align:center;justify-content:center}

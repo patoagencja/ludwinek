@@ -108,6 +108,14 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
       await p.locator('button', { hasText: /^\s*Na kwotę\s*$/ }).first().click(); await p.waitForTimeout(300);
       const kw = await p.evaluate(() => ({ s: document.querySelectorAll('.offer s.la-stara').length, t: document.querySelector('.offer .orow.main').innerText }));
       if (kw.s) BLAD(`${nazwa} /vouchery: voucher kwotowy ma przekreślenie (${kw.t})`);
+      // „Inna kwota”: dowolna kwota trafia do „Do zapłaty”
+      const inna = p.locator('button.opt', { hasText: 'Inna kwota' });
+      if (!(await inna.count())) BLAD(`${nazwa} /vouchery: brak opcji „Inna kwota”`);
+      else {
+        await inna.click(); await p.locator('#vaw').fill('450'); await p.waitForTimeout(300);
+        const dz = liczba(await p.locator('.offer .orow.main').innerText());
+        if (dz !== 450) BLAD(`${nazwa} /vouchery: Inna kwota 450 zł, a Do zapłaty ${dz} zł`); else OK(`${nazwa} /vouchery: Inna kwota 450 zł → Do zapłaty 450 zł`);
+      }
       if (err.length) BLAD(`${nazwa} /vouchery: błędy JS: ${err.join(' | ')}`);
       OK(`${nazwa} /vouchery: sprawdzonych wariantów ${sprawdzone}`);
       await p.close();

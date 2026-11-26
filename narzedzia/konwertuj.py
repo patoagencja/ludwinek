@@ -138,6 +138,12 @@ def legal(s):
     return s
 
 VSOON_CSS = """
+/* voucher kwotowy: pole „Inna kwota” */
+.la-kw{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--ink);max-width:260px}
+.la-kw input{flex:1;min-width:0;border:0;background:transparent;padding:10px 0;font:300 34px/1.1 var(--serif);color:var(--ink);-moz-appearance:textfield}
+.la-kw input::-webkit-outer-spin-button,.la-kw input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.la-kw input:focus{outline:none}.la-kw:focus-within{border-bottom-color:var(--gold, #C9A97F)}
+.la-kw span{font:300 28px/1 var(--serif);color:var(--mute, #6F675C)}
 /* vouchery wkrótce: sprzedaż online jeszcze nie działa (brak płatności), Klarna wyłączona */
 .klarna{display:none!important}
 .la a.vsoon-btn,.la a.vsoon-btn:hover{background:transparent!important;border-color:currentColor!important;color:inherit!important;opacity:.5;letter-spacing:.06em;white-space:nowrap;text-align:center;justify-content:center}
@@ -153,8 +159,9 @@ SPRZEDAZ_VOUCHEROW = True
 VOUCHER_WAZNOSC = '12 miesięcy'
 
 VP_GO = """        if (this.state.vpBusy) return;
+        if (st.vt === 1 && st.va === -1 && !(st.vaw >= 100 && st.vaw <= 5000)) { this.setState({ vpOk: 'Wpisz kwotę vouchera od 100 do 5000 zł.' }, () => { const el = document.getElementById('vaw'); if (el) el.focus(); }); return; }
         const fd = new FormData();
-        [['email', v.mail], ['zgoda', v.ok ? '1' : ''], ['typ', st.vt === 0 ? 'zabieg' : 'kwota'], ['zabieg', vT.slug || ''], ['g', String(st.vzg || 0)], ['r', String(st.vzr || 0)], ['va', String(st.va)]].forEach(([k, x]) => fd.append(k, x));
+        [['email', v.mail], ['zgoda', v.ok ? '1' : ''], ['typ', st.vt === 0 ? 'zabieg' : 'kwota'], ['zabieg', vT.slug || ''], ['g', String(st.vzg || 0)], ['r', String(st.vzr || 0)], ['va', String(st.va)], ['kwota', String(st.va === -1 ? (st.vaw || '') : '')]].forEach(([k, x]) => fd.append(k, x));
         this.setState({ vpBusy: true, vpOk: null, vpErr: {} });
         fetch('/voucher/zamow', { method: 'POST', body: fd, credentials: 'same-origin' }).then((r) => r.json().catch(() => ({}))).then((j) => {
           if (j.ok && j.url) {
@@ -190,6 +197,19 @@ def vouchers(s, key):
             ('<button type="button" class="btn vgo" onClick="{{ vpGo }}">Przejdź do płatności</button>', '<button type="button" class="btn vgo" onClick="{{ vpGo }}">{{ vpBtn }}</button>'),
             ("vpOpen: !!st.vpOk, vpMail: st.vpOk || '',", "vpOpen: !!st.vpOk, vpMail: st.vpOk || '', vpBtn: st.vpBusy ? 'Otwieram płatność…' : 'Kupuję i płacę',"),
             ("        this.setState({ vpErr: {}, vpTry: false, vpOk: v.mail }, () => { this.vpShow(document.getElementById('vpay')); this.vpFocus(document.getElementById('vpay-h')); });", VP_GO),
+            # voucher kwotowy: „Inna kwota” z polem na dowolną kwotę 100–5000 zł
+            ('<sc-for list="{{ va }}" as="o" hint-placeholder-count="4"><button type="button" class="{{ o.cls }}" aria-pressed="{{ o.on }}" onClick="{{ o.pick }}"><i></i><b>{{ o.name }}</b><span></span></button></sc-for>',
+             '<sc-for list="{{ va }}" as="o" hint-placeholder-count="4"><button type="button" class="{{ o.cls }}" aria-pressed="{{ o.on }}" onClick="{{ o.pick }}"><i></i><b>{{ o.name }}</b><span></span></button></sc-for>'
+             '<button type="button" class="{{ vaInna.cls }}" aria-pressed="{{ vaInna.on }}" onClick="{{ vaInna.pick }}"><i></i><b>Inna kwota</b><span>100–5000 zł</span></button>'
+             '<sc-if value="{{ vaInna.on }}" hint-placeholder-val="{{ false }}"><div class="vvar"><label class="vvl" for="vaw">Kwota vouchera (od 100 do 5000 zł)</label>'
+             '<div class="la-kw"><input id="vaw" type="number" inputmode="numeric" min="100" max="5000" step="10" placeholder="np. 400" onInput="{{ vaInna.input }}"><span>zł</span></div></div></sc-if>'),
+            ("const va = (D.va || []).map((a, i) => ({ name: a, cls: st.va === i ? 'opt on' : 'opt', on: st.va === i, pick: () => this.setState({ va: i }) }));",
+             "const va = (D.va || []).map((a, i) => ({ name: a, cls: st.va === i ? 'opt on' : 'opt', on: st.va === i, pick: () => this.setState({ va: i }) }));\n"
+             "    const vaInna = { cls: st.va === -1 ? 'opt on' : 'opt', on: st.va === -1, pick: () => this.setState({ va: -1 }, () => { const el = document.getElementById('vaw'); if (el) el.focus(); }),\n"
+             "      input: (e) => { const n = parseInt(String(e.target.value).replace(/[^0-9]/g, ''), 10) || 0; this.setState({ vaw: n, vpOk: null }); } };"),
+            ("const vAmt = st.vt === 0 ? vr0[1] : (parseInt(String((D.va || [])[st.va] || '0').replace(/[^0-9]/g, ''), 10) || 0);",
+             "const vAmt = st.vt === 0 ? vr0[1] : st.va === -1 ? (st.vaw || 0) : (parseInt(String((D.va || [])[st.va] || '0').replace(/[^0-9]/g, ''), 10) || 0);"),
+            ("vtypes, isZ: st.vt === 0, isA: st.vt === 1, vz, va, vsel,", "vtypes, isZ: st.vt === 0, isA: st.vt === 1, vz, va, vaInna, vsel,"),
             ('<p class="sm" style="margin: 14px 0 0">BLIK · karta · przelew · Klarna</p>',
              '<p class="sm" style="margin: 14px 0 0">BLIK · Przelewy24 · karta. Płatność obsługuje Stripe. Voucher z kodem przyjdzie e-mailem zaraz po płatności. Masz 14 dni na odstąpienie od umowy.</p>'),
         ]:
