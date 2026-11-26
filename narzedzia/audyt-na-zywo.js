@@ -21,6 +21,7 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
       const p = await c.newPage(); const err = [];
       p.on('pageerror', (e) => err.push(e.message));
       const r = await p.goto(B + u, { waitUntil: 'networkidle', timeout: 60000 }).catch((e) => ({ status: () => 'błąd: ' + e.message }));
+      await p.waitForSelector('h1', { timeout: 20000 }).catch(() => {});
       await p.waitForTimeout(900);
       const d = await p.evaluate(() => {
         const P = window.LA_PROMO || null, t = document.body.innerText;
