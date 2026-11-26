@@ -15,11 +15,14 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
 (async () => {
   const b = await chromium.launch();
   let promo = null;
-  for (const [nazwa, opcje] of [['komputer', { viewport: { width: 1440, height: 900 } }], ['telefon', devices['iPhone 13']]]) {
+  for (const [nazwa, opcje] of [['komputer', { viewport: { width: 1440, height: 900 } }], ['telefon', devices['iPhone 13']], ['komputer-2', { viewport: { width: 1280, height: 800 } }]]) {
     const c = await b.newContext(opcje);
     for (const u of STRONY) {
       const p = await c.newPage(); const err = [];
       p.on('pageerror', (e) => err.push(e.message));
+      const zleZap = [];
+      p.on('response', (x) => { if (x.url().startsWith(B) && x.status() >= 400) zleZap.push(x.status() + ' ' + x.url().replace(B, '')); });
+      p.on('requestfailed', (x) => { if (x.url().startsWith(B)) zleZap.push('nieudane ' + x.url().replace(B, '') + ' (' + (x.failure() || {}).errorText + ')'); });
       const r = await p.goto(B + u, { waitUntil: 'networkidle', timeout: 60000 }).catch((e) => ({ status: () => 'błąd: ' + e.message }));
       await p.waitForSelector('h1', { timeout: 20000 }).catch(() => {});
       await p.waitForTimeout(900);
@@ -47,6 +50,7 @@ const liczba = (t) => +(String(t).match(/(\d+)\s?zł/) || [0, NaN])[1];
       const st = typeof r.status === 'function' ? r.status() : r;
       if (st !== 200) BLAD(`${nazwa} ${u}: HTTP ${st}`);
       if (err.length) BLAD(`${nazwa} ${u}: błędy JS: ${err.join(' | ')}`);
+      if (zleZap.length) BLAD(`${nazwa} ${u}: nieudane zapytania: ${zleZap.join(', ')}`);
       if (d.h1 !== 1) BLAD(`${nazwa} ${u}: h1 = ${d.h1}`);
       if (d.zle) BLAD(`${nazwa} ${u}: zakazane słowo albo placeholder w tekście`);
       const pr = d.P && d.P.rabat;
