@@ -6,7 +6,7 @@ const B = process.env.ADRES || 'https://ludwinekaesthetic.pl';
 const STRONY = ['/', '/modelowanie-ust', '/usuwanie-kwasu-hialuronowego', '/stymulatory-tkankowe', '/mezoterapia-iglowa', '/zabiegi', '/dermapen',
   '/terapia-blizn-i-rozstepow', '/biopeeling', '/zabiegi-pielegnacyjne', '/event-glow', '/signature-glow', '/brwi-i-rzesy', '/mezoterapia-skory-glowy',
   '/dla-mezczyzn', '/blizny-potradzikowe', '/cennik', '/vouchery', '/o-mnie', '/informacje', '/kontakt', '/polityka-prywatnosci', '/regulamin', '/regulamin-voucherow'];
-const ZAMOWIEN = +(process.env.ZAMOWIEN || 3);   // ile prawdziwych sesji Stripe utworzyć do sprawdzenia kwoty (nieopłacone wygasają)
+const ZAMOWIEN = +(process.env.ZAMOWIEN || 0);   // ile prawdziwych sesji Stripe utworzyć do sprawdzenia kwoty (nieopłacone wygasają po 24 h); ZAMOWIEN=3 w workflow, gdy potrzeba
 const bledy = [], ok = [];
 const BLAD = (s) => { bledy.push(s); console.log('BŁĄD: ' + s); };
 const OK = (s) => { ok.push(s); console.log('OK: ' + s); };
