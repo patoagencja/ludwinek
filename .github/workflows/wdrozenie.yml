@@ -31,7 +31,8 @@ jobs:
           LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
           set -e
-          S="set ftp:ssl-allow true; set ssl:verify-certificate no; set ftp:passive-mode true; set net:max-retries 3; set net:timeout 30; set cmd:fail-exit true"
+          # xfer:use-temp-file: każdy plik idzie pod tymczasową nazwą i jest podmieniany na końcu (bez niedogranych plików dla gości w trakcie wgrywania)
+          S="set ftp:ssl-allow true; set ssl:verify-certificate no; set ftp:passive-mode true; set net:max-retries 3; set net:timeout 30; set cmd:fail-exit true; set xfer:use-temp-file yes; set xfer:temp-file-name .wgr.*"
           ftp() { lftp --env-password -u "$FTP_USER" -e "$S; $1; bye" "ftp://$FTP_HOST"; }
           # konto FTP widzi albo /public_html (wtedy strona jest w podkatalogu domeny), albo od razu katalog domeny
           if ftp "cd $DOMENA" >/dev/null 2>&1; then T="$DOMENA"; else T="."; fi
