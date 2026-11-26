@@ -92,7 +92,15 @@ jobs:
           S="set ftp:ssl-allow true; set ssl:verify-certificate no; set ftp:passive-mode true; set net:max-retries 3; set net:timeout 30; set cmd:fail-exit true"
           ftp() { lftp --env-password -u "$FTP_USER" -e "$S; $1; bye" "ftp://$FTP_HOST"; }
           if ftp "cd $DOMENA" >/dev/null 2>&1; then KAT="$DOMENA"; else KAT="."; fi
+          # „_usun_edycje”: [{strona, z}] usuwa błędne zmiany tekstu z panelu (kopia zostaje w artefakcie kopia-panelu)
+          USUN=$(jq -c '._usun_edycje // []' narzedzia/ustawienia-poprawka.json)
+          jq 'del(._usun_edycje)' popr/_ustawienia.json > popr/t.json && mv popr/t.json popr/_ustawienia.json
           ftp "cd $KAT; mkdir -p _panel-dane; cd _panel-dane; put popr/_ustawienia.json -o _ustawienia.json"
+          if [ "$USUN" != "[]" ] && [ -f kopia-panelu/_panel-dane/_edycje.json ]; then
+            jq --argjson u "$USUN" '[.[] | . as $e | select(($u | map(select(.strona == $e.strona and (.z | gsub("[\\s\u00a0]+"; " ")) == ($e.z | tostring | gsub("[\\s\u00a0]+"; " ")))) | length) == 0)]' kopia-panelu/_panel-dane/_edycje.json > popr/_edycje.json
+            echo "Zmian po usunięciu: $(jq length popr/_edycje.json)"
+            ftp "cd $KAT; cd _panel-dane; put popr/_edycje.json -o _edycje.json"
+          fi
           echo "::notice::Ustawienia promocji poprawione"
 
       - name: Kopia zmian z panelu
